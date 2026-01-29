@@ -46,6 +46,36 @@
       .cursor-wait {
         cursor: wait;
       }
+      @media print {
+        header, .upload-section, .download-buttons, .footer-info {
+          display: none !important;
+        }
+        body {
+          background-color: white;
+          color: black;
+        }
+        .glass-panel {
+          background: white;
+          border: 1px solid #e2e8f0;
+          color: black;
+        }
+        #root {
+          padding: 0 !important;
+          margin: 0 !important;
+        }
+        main {
+          margin-top: 0 !important;
+        }
+        .text-white, .text-slate-200, .text-slate-300 {
+          color: black !important;
+        }
+        .text-slate-400, .text-slate-500 {
+          color: #64748b !important;
+        }
+        .bg-slate-900, .bg-slate-800 {
+          background-color: #f8fafc !important;
+        }
+      }
     </style>
 
     <!-- Import Map per gestire le dipendenze React ed esterne direttamente nel browser -->
@@ -94,12 +124,6 @@
         await new Promise(r => setTimeout(r, 4000));
         
         return {
-          scores: {
-            overall: 78,
-            design: 82,
-            content: 74,
-            ux: 76,
-          },
           heatmap: [
             { x: 50, y: 20, intensity: 0.9 },
             { x: 20, y: 45, intensity: 0.6 },
@@ -107,39 +131,84 @@
             { x: 50, y: 75, intensity: 0.8 },
             { x: 30, y: 30, intensity: 0.5 },
           ],
-          behavioral: [
-            { name: "Anchoring (Ancoraggio)", status: "applicato", observation: "I prezzi sono presentati con riferimenti chiari.", improvement: "" },
-            { name: "Authority (Autorità)", status: "parziale", observation: "Mancano loghi di certificazione o badge di fiducia.", improvement: "Aggiungi loghi di partner o certificazioni riconosciute." },
-            { name: "Availability Heuristic", status: "mancante", observation: "Nessun esempio recente di successo mostrato chiaramente.", improvement: "Mostra casi studio recenti o statistiche di successo." },
-            { name: "Bandwagon Effect", status: "applicato", observation: "Presenza di contatori 'X utenti soddisfatti'.", improvement: "" },
-            { name: "Commitment and Consistency", status: "parziale", observation: "Il funnel è un po' brusco.", improvement: "Usa micro-conversioni (es. quiz) prima della CTA finale." },
-            { name: "Loss Aversion", status: "mancante", observation: "Non si percepisce cosa l'utente perde ignorando l'offerta.", improvement: "Usa frasi come 'Non perdere l'occasione di...'" },
-            { name: "Paradox of Choice", status: "applicato", observation: "Poche opzioni chiare, evita confusione.", improvement: "" },
-            { name: "Social Proof", status: "applicato", observation: "Testimonianze reali visibili.", improvement: "" },
-            { name: "Scarcity (Scarsità)", status: "mancante", observation: "Nessun indicatore di tempo o quantità.", improvement: "Inserisci un countdown per l'offerta." },
-            { name: "Default Effect", status: "parziale", observation: "Il piano consigliato non è abbastanza evidenziato.", improvement: "Usa un badge 'Più Scelto' sul piano centrale." },
-          ],
-          nlp: {
-            tone: "Professionale e Orientato ai Risultati",
-            readingLevel: "Accessibile (Adatto a tutti)",
-            emotionalTriggers: ["Successo", "Sicurezza", "Crescita"],
-            clarityScore: 8.5,
-            principles: [
-              { name: "Chunking", status: "applicato", observation: "Informazioni divise in blocchi digeribili.", improvement: "" },
-              { name: "Milton Model", status: "parziale", observation: "Linguaggio un po' troppo tecnico in certi punti.", improvement: "Usa metafore più semplici per i concetti complessi." },
-              { name: "Pacing and Leading", status: "applicato", observation: "Il copy accompagna bene l'utente verso la soluzione.", improvement: "" },
-              { name: "Representational Systems", status: "parziale", observation: "Predominanza di termini visivi.", improvement: "Includi termini auditivi e cinestesici per un impatto multisensoriale." },
-            ]
-          },
-          conversionReport: {
-            strengths: ["Design moderno e pulito", "Messaggio principale chiaro", "Mobile responsive"],
-            weaknesses: ["Urgenza assente", "CTA con poco contrasto", "Headline poco persuasiva"],
-            suggestions: [
-              { title: "Ottimizza il Contrasto CTA", analysis: "Il pulsante principale ha un colore simile agli elementi decorativi.", reasoning: "Un colore complementare e vivace attirerà l'attenzione inconscia verso l'azione desiderata." },
-              { title: "Implementa Urgenza Psicologica", analysis: "Non ci sono motivi per agire subito invece che rimandare.", reasoning: "La scarsità (tempo o quantità) combatte la procrastinazione decisionale." },
-              { title: "Riformula l'Headline", analysis: "Attualmente descrive il servizio invece del beneficio.", reasoning: "Il cervello rettile risponde ai benefici diretti per la sopravvivenza o il successo." }
+          report: {
+            sections: [
+              {
+                id: 1,
+                title: "Chiarezza della promessa principale",
+                score: 65,
+                evaluation: "La headline descrive il servizio ma non il beneficio immediato.",
+                suggestions: ["Riscrivi come: 'Ottieni [Risultato] in soli [Tempo] senza [Problema]'", "Includi un numero concreto (es. '+30% di vendite')"]
+              },
+              {
+                id: 2,
+                title: "Forza e visibilità delle Call To Action",
+                score: 45,
+                evaluation: "La CTA ha poco contrasto e il testo è tecnico ('Invia').",
+                suggestions: ["Usa un colore ad alto contrasto (es. Arancione su Blu)", "Cambia il testo in: 'Voglio la mia consulenza gratuita'"]
+              },
+              {
+                id: 3,
+                title: "Concretezza dei benefici",
+                score: 55,
+                evaluation: "Vengono elencate caratteristiche tecniche, non benefici reali.",
+                suggestions: ["Trasforma 'Hosting 10GB' in 'Spazio illimitato per tutte le tue foto'", "Aggiungi una sezione 'Cosa cambierà nel tuo lavoro'"]
+              },
+              {
+                id: 5,
+                title: "Rilevanza per il target e contesto locale",
+                score: 40,
+                evaluation: "Linguaggio troppo generico, non menziona la territorialità.",
+                suggestions: ["Menziona esplicitamente la città o regione", "Usa foto del territorio locale invece di stock photos generiche"]
+              },
+              {
+                id: 6,
+                title: "Scansionabilità e leggibilità",
+                score: 75,
+                evaluation: "Buona divisione in sezioni, ma mancano bullet point efficaci.",
+                suggestions: ["Trasforma il secondo paragrafo in un elenco puntato", "Aggiungi sottotitoli ogni 3-4 righe"]
+              },
+              {
+                id: 7,
+                title: "Qualità delle prove sociali",
+                score: 30,
+                evaluation: "Solo due testimonianze brevi e senza foto/nome reale.",
+                suggestions: ["Includi foto dei clienti e loghi aziendali", "Chiedi testimonianze che citino risultati numerici"]
+              }
             ],
-            conclusion: "L'analisi suggerisce che la landing page è esteticamente valida ma manca di trigger comportamentali forti. Implementando urgenza e migliorando la gerarchia delle azioni, si stima un incremento del tasso di conversione tra il 10% e il 22%."
+            behavioralLevers: [
+              { name: "Prova sociale", status: "parziale", observation: "Poche recensioni presenti.", improvement: "Aggiungi badge Trustpilot o video-testimonianze." },
+              { name: "Autorità", status: "mancante", observation: "Nessun logo di certificazione visibile.", improvement: "Inserisci loghi di partner o premi vinti." },
+              { name: "Scarsità e urgenza", status: "mancante", observation: "Nessun limite di tempo o quantità.", improvement: "Aggiungi un'offerta a scadenza (es. 'Solo per oggi')." },
+              { name: "Reciprocità", status: "applicato", observation: "Guida gratuita offerta al download.", improvement: "" },
+              { name: "Loss aversion", status: "mancante", observation: "Non si evidenzia il costo del non agire.", improvement: "Spiega quanto denaro perde il cliente restando così." },
+              { name: "Commitment", status: "parziale", observation: "Il modulo è lungo.", improvement: "Usa un modulo in 2 step partendo da una domanda semplice." },
+            ],
+            coherence: {
+               evaluation: "La promessa principale non è pienamente supportata dal corpo del testo.",
+               disalignments: ["La headline promette velocità, ma il testo parla di precisione.", "La CTA non richiama il beneficio della headline."],
+               fix: "Allinea il copy focalizzandoti solo sulla 'Velocità' come valore cardine."
+            },
+            priorities: [
+              "Aumentare il contrasto cromatico della CTA principale.",
+              "Riscrivere la Headline focalizzandosi sul beneficio economico.",
+              "Inserire almeno 3 testimonianze con dati reali.",
+              "Aggiungere un elemento di urgenza (scadenza offerta).",
+              "Semplificare il form di contatto riducendo i campi richiesti."
+            ],
+            summary: {
+              scores: {
+                "Promessa": 65,
+                "CTA": 45,
+                "Benefici": 55,
+                "Persuasione": 35,
+                "Target Locale": 40,
+                "Leggibilità": 75,
+                "Prova Sociale": 30
+              },
+              judgment: "Pagina chiara ma poco persuasiva: buona la struttura informativa, ma mancano i trigger psicologici necessari per spingere l'utente all'azione immediata.",
+              overall: 49
+            }
           }
         };
       };
@@ -205,130 +274,152 @@
         );
       };
 
-      const PrincipleCard = ({ item }) => (
-        <div className="bg-slate-800/40 border border-slate-700/60 rounded-xl p-5 hover:border-indigo-500/30 transition-colors">
-          <div className="flex justify-between items-start mb-4">
-            <h4 className="text-lg font-bold text-white">{item.name}</h4>
-            <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${item.status === 'applicato' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : item.status === 'mancante' ? 'bg-slate-700 text-slate-400 border border-slate-600' : 'bg-amber-500/20 text-amber-400 border border-amber-500/30'}`}>
-              {item.status}
-            </span>
-          </div>
-          <div className="space-y-4">
-            <div>
-              <p className="text-xs text-slate-500 uppercase font-semibold mb-1">Valutazione Attuale</p>
-              <p className="text-slate-300 text-sm leading-relaxed">{item.observation}</p>
+      const SectionCard = ({ section }) => (
+        <div className="glass-panel p-8 rounded-2xl border border-white/10 hover:border-indigo-500/30 transition-all">
+          <div className="flex justify-between items-center mb-6 border-b border-white/5 pb-4">
+            <h3 className="text-xl font-bold text-white flex items-center gap-3">
+              <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-indigo-600/20 text-indigo-400 text-sm">{section.id}</span>
+              {section.title}
+            </h3>
+            <div className="flex flex-col items-end">
+               <span className="text-2xl font-black italic text-indigo-400">{section.score}<span className="text-sm text-slate-500 not-italic">/100</span></span>
             </div>
-            {item.status !== 'applicato' && (
-              <div className="pt-3 border-t border-white/5">
-                <p className="text-xs text-indigo-400 uppercase font-semibold mb-1">Come potrebbe essere</p>
-                <p className="text-slate-200 text-sm leading-relaxed">{item.improvement}</p>
-              </div>
-            )}
+          </div>
+          <div className="space-y-6">
+            <div className="bg-slate-900/50 p-4 rounded-xl border-l-4 border-slate-700">
+               <p className="text-xs text-slate-500 uppercase font-bold mb-1 tracking-widest">Analisi</p>
+               <p className="text-slate-300 leading-relaxed">{section.evaluation}</p>
+            </div>
+            <div>
+               <p className="text-xs text-emerald-500 uppercase font-bold mb-3 tracking-widest">Suggerimenti di Intervento</p>
+               <ul className="space-y-3">
+                 {section.suggestions.map((s, i) => (
+                   <li key={i} className="flex items-start gap-3 text-slate-200">
+                     <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0 mt-0.5" />
+                     <span>{s}</span>
+                   </li>
+                 ))}
+               </ul>
+            </div>
           </div>
         </div>
       );
 
       const ReportSection = ({ data }) => {
+        const { report } = data;
         return (
           <div className="space-y-20">
-            {/* Riepilogo Esecutivo */}
-            <section>
-              <div className="flex items-center gap-3 mb-8 border-b border-white/10 pb-4">
-                 <div className="bg-blue-500/20 p-2 rounded-lg"><Activity className="w-6 h-6 text-blue-400" /></div>
-                 <h2 className="text-3xl font-bold text-white">Riepilogo Esecutivo</h2>
+            {/* 1, 2, 3 - Core elements */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+               {report.sections.slice(0, 3).map(section => <SectionCard key={section.id} section={section} />)}
+            </div>
+
+            {/* 4 - Persuasion Levers Table */}
+            <section className="glass-panel p-8 rounded-[32px] border border-purple-500/20 bg-purple-900/5">
+              <div className="flex items-center gap-3 mb-8">
+                 <div className="bg-purple-500/20 p-2 rounded-lg"><Brain className="w-6 h-6 text-purple-400" /></div>
+                 <div>
+                   <h2 className="text-2xl font-bold text-white uppercase tracking-tight">4. Leve Psicologiche di Persuasione</h2>
+                   <p className="text-slate-400 text-sm">Valutazione dei trigger decisionali</p>
+                 </div>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div className="glass-panel p-8 rounded-2xl border-l-4 border-emerald-500">
-                  <div className="flex items-center gap-3 mb-6"><CheckCircle2 className="w-8 h-8 text-emerald-500" /><h3 className="text-2xl font-semibold text-white">Punti di Forza</h3></div>
-                  <ul className="space-y-4">
-                    {data.conversionReport.strengths.map((item, i) => (
-                      <li key={i} className="text-slate-200 text-lg flex items-start gap-3 leading-relaxed"><span className="w-2 h-2 bg-emerald-500 rounded-full mt-2.5 shrink-0" />{item}</li>
+              <div className="overflow-hidden rounded-2xl border border-white/5 bg-slate-900/40">
+                <table className="w-full text-left border-collapse">
+                  <thead className="bg-slate-800/50">
+                    <tr>
+                      <th className="p-4 text-xs font-bold text-slate-400 uppercase">Leva</th>
+                      <th className="p-4 text-xs font-bold text-slate-400 uppercase">Stato</th>
+                      <th className="p-4 text-xs font-bold text-slate-400 uppercase">Osservazione</th>
+                      <th className="p-4 text-xs font-bold text-slate-400 uppercase">Suggerimento</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-white/5">
+                    {report.behavioralLevers.map((lever, i) => (
+                      <tr key={i} className="hover:bg-white/5 transition-colors">
+                        <td className="p-4 font-bold text-white">{lever.name}</td>
+                        <td className="p-4">
+                           <span className={`px-2 py-1 rounded text-[10px] font-black uppercase tracking-wider ${lever.status === 'applicato' ? 'bg-emerald-500/20 text-emerald-400' : lever.status === 'mancante' ? 'bg-red-500/20 text-red-400' : 'bg-amber-500/20 text-amber-400'}`}>
+                             {lever.status}
+                           </span>
+                        </td>
+                        <td className="p-4 text-sm text-slate-300">{lever.observation}</td>
+                        <td className="p-4 text-sm text-slate-400 italic">{lever.improvement}</td>
+                      </tr>
                     ))}
-                  </ul>
-                </div>
-                <div className="glass-panel p-8 rounded-2xl border-l-4 border-amber-500">
-                  <div className="flex items-center gap-3 mb-6"><AlertTriangle className="w-8 h-8 text-amber-500" /><h3 className="text-2xl font-semibold text-white">Criticità Rilevate</h3></div>
-                  <ul className="space-y-4">
-                    {data.conversionReport.weaknesses.map((item, i) => (
-                      <li key={i} className="text-slate-200 text-lg flex items-start gap-3 leading-relaxed"><span className="w-2 h-2 bg-amber-500 rounded-full mt-2.5 shrink-0" />{item}</li>
-                    ))}
-                  </ul>
-                </div>
+                  </tbody>
+                </table>
               </div>
             </section>
 
-            {/* Raccomandazioni */}
+            {/* 5, 6, 7 - Content & Social */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+               {report.sections.slice(3).map(section => <SectionCard key={section.id} section={section} />)}
+            </div>
+
+            {/* 8 - Coherence */}
+            <section className="glass-panel p-8 rounded-2xl border-l-4 border-blue-500">
+               <div className="flex items-center gap-3 mb-6">
+                 <Zap className="w-6 h-6 text-blue-400" />
+                 <h2 className="text-2xl font-bold text-white uppercase tracking-tight">8. Coerenza Headline-Contenuto-CTA</h2>
+               </div>
+               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <div className="space-y-4">
+                    <p className="text-slate-300 leading-relaxed font-medium">{report.coherence.evaluation}</p>
+                    <div className="bg-red-500/10 p-4 rounded-xl border border-red-500/20">
+                       <p className="text-xs text-red-400 font-bold uppercase mb-2">Disallineamenti rilevati:</p>
+                       <ul className="space-y-2">
+                         {report.coherence.disalignments.map((d, i) => <li key={i} className="text-sm text-slate-300 flex items-center gap-2"><span className="w-1.5 h-1.5 bg-red-500 rounded-full" /> {d}</li>)}
+                       </ul>
+                    </div>
+                  </div>
+                  <div className="bg-blue-500/10 p-6 rounded-2xl border border-blue-500/20 flex flex-col justify-center">
+                     <p className="text-xs text-blue-400 font-bold uppercase mb-2">Come correggere:</p>
+                     <p className="text-lg text-white italic">"{report.coherence.fix}"</p>
+                  </div>
+               </div>
+            </section>
+
+            {/* 9 - Priorities */}
             <section>
-              <div className="glass-panel p-8 md:p-10 rounded-3xl bg-gradient-to-br from-indigo-900/20 to-slate-900/40 border border-indigo-500/20">
+              <div className="glass-panel p-10 rounded-[40px] bg-gradient-to-br from-indigo-900/30 to-slate-900/50 border border-indigo-500/30 shadow-2xl">
                 <div className="flex items-center gap-4 mb-10">
                   <div className="bg-yellow-500/20 p-3 rounded-xl border border-yellow-500/30"><Lightbulb className="w-8 h-8 text-yellow-400" /></div>
-                  <div><h2 className="text-3xl font-bold text-white">Raccomandazioni Strategiche</h2><p className="text-slate-400 text-lg">Azioni concrete per massimizzare la conversione</p></div>
+                  <div>
+                    <h2 className="text-3xl font-black text-white uppercase tracking-tighter italic">9. Priorità di Intervento</h2>
+                    <p className="text-slate-400 text-lg">Azioni a massimo impattoLead Generation</p>
+                  </div>
                 </div>
-                <div className="space-y-8">
-                   {data.conversionReport.suggestions.map((suggestion, i) => (
-                     <div key={i} className="flex flex-col md:flex-row gap-6 bg-slate-800/40 p-6 rounded-2xl border border-slate-700/50 hover:bg-slate-800/60 transition-colors">
-                       <div className="flex-shrink-0"><div className="w-12 h-12 rounded-full bg-indigo-600 flex items-center justify-center font-bold text-white text-xl shadow-lg shadow-indigo-500/20 border border-indigo-400/30">{i + 1}</div></div>
-                       <div className="flex-grow space-y-4">
-                         <h3 className="text-xl md:text-2xl font-bold text-white leading-tight">{suggestion.title}</h3>
-                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
-                           <div className="bg-slate-900/30 p-4 rounded-xl border-l-2 border-slate-600">
-                              <div className="flex items-center gap-2 mb-2 text-slate-400 uppercase text-xs font-bold tracking-wider"><Search className="w-3 h-3" /> Analisi (Stato Attuale)</div>
-                              <p className="text-slate-300 text-base leading-relaxed">{suggestion.analysis}</p>
-                           </div>
-                           <div className="bg-indigo-900/10 p-4 rounded-xl border-l-2 border-indigo-500">
-                              <div className="flex items-center gap-2 mb-2 text-indigo-400 uppercase text-xs font-bold tracking-wider"><ArrowRightCircle className="w-3 h-3" /> Ragionamento (Perché Cambiare)</div>
-                              <p className="text-slate-200 text-base leading-relaxed font-medium">{suggestion.reasoning}</p>
-                           </div>
-                         </div>
+                <div className="space-y-4">
+                   {report.priorities.map((p, i) => (
+                     <div key={i} className="flex items-center gap-6 bg-slate-800/40 p-5 rounded-2xl border border-white/5 hover:bg-slate-800/60 transition-all group">
+                       <div className="flex-shrink-0 w-12 h-12 rounded-full bg-indigo-600 flex items-center justify-center font-black text-white text-xl shadow-lg group-hover:scale-110 transition-transform">
+                         {i + 1}
                        </div>
+                       <p className="text-xl text-slate-100 font-semibold leading-snug">{p}</p>
                      </div>
                    ))}
                 </div>
-                <div className="mt-12 pt-8 border-t border-white/5">
-                  <h4 className="text-sm font-bold text-indigo-400 mb-3 uppercase tracking-widest">Conclusione dell'Analisi</h4>
-                  <p className="text-xl text-slate-200 font-medium italic leading-relaxed opacity-90">"{data.conversionReport.conclusion}"</p>
-                </div>
               </div>
             </section>
 
-            {/* Behavioral */}
-            <section>
-              <div className="flex items-center gap-3 mb-8 border-b border-white/10 pb-4">
-                 <div className="bg-purple-500/20 p-2 rounded-lg"><Brain className="w-6 h-6 text-purple-400" /></div>
-                 <div><h2 className="text-3xl font-bold text-white">Scienza Comportamentale</h2><p className="text-slate-400">Principi psicologici applicati al marketing</p></div>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-                {data.behavioral.map((item, i) => (<PrincipleCard key={i} item={item} />))}
-              </div>
-            </section>
-
-            {/* NLP */}
-            <section>
-              <div className="flex items-center gap-3 mb-8 border-b border-white/10 pb-4">
-                 <div className="bg-pink-500/20 p-2 rounded-lg"><MessageSquareQuote className="w-6 h-6 text-pink-400" /></div>
-                 <div><h2 className="text-3xl font-bold text-white">NLP & Copywriting</h2><p className="text-slate-400">Elaborazione Neuro-Linguistica e Tono di Voce</p></div>
-              </div>
-              <div className="glass-panel p-8 rounded-2xl space-y-8">
-                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 pb-8 border-b border-white/5">
-                    <div className="text-center sm:text-left"><div className="text-xs text-slate-500 uppercase tracking-widest font-bold mb-1">Tono di Voce</div><div className="text-2xl font-bold text-white capitalize">{data.nlp.tone}</div></div>
-                    <div className="text-center sm:text-left"><div className="text-xs text-slate-500 uppercase tracking-widest font-bold mb-1">Livello Lettura</div><div className="text-2xl font-bold text-white">{data.nlp.readingLevel}</div></div>
-                    <div className="text-center sm:text-left"><div className="text-xs text-slate-500 uppercase tracking-widest font-bold mb-1">Chiarezza</div><div className="text-2xl font-bold text-white">{data.nlp.clarityScore}<span className="text-lg text-slate-500">/10</span></div></div>
-                 </div>
-                 <div className="pb-8 border-b border-white/5">
-                    <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2"><Zap className="w-5 h-5 text-yellow-400" />Trigger Emotivi Identificati</h3>
-                    <div className="flex flex-wrap gap-3">
-                      {data.nlp.emotionalTriggers && data.nlp.emotionalTriggers.length > 0 ? (
-                        data.nlp.emotionalTriggers.map((trigger, i) => (<span key={i} className="px-4 py-2 rounded-lg bg-pink-500/10 border border-pink-500/30 text-pink-300 font-medium">{trigger}</span>))
-                      ) : (<span className="text-slate-500 italic">Nessun trigger forte rilevato</span>)}
+            {/* 10 - Recap Scores */}
+            <section className="pt-12 border-t border-white/10">
+               <div className="flex items-center gap-3 mb-10">
+                  <Activity className="w-6 h-6 text-emerald-400" />
+                  <h2 className="text-3xl font-black text-white uppercase tracking-tighter italic">10. Riepilogo Punteggi</h2>
+               </div>
+               <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4 mb-12">
+                  {Object.entries(report.summary.scores).map(([name, score]) => (
+                    <div key={name} className="glass-panel p-4 rounded-xl text-center">
+                       <p className="text-[10px] text-slate-500 uppercase font-black mb-2 leading-tight h-8 flex items-center justify-center">{name}</p>
+                       <p className={`text-2xl font-black italic ${score > 70 ? 'text-emerald-400' : score > 50 ? 'text-amber-400' : 'text-red-400'}`}>{score}</p>
                     </div>
-                 </div>
-                 <div>
-                   <h3 className="text-lg font-bold text-white mb-6">Analisi Principi NLP</h3>
-                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-                     {data.nlp.principles && data.nlp.principles.map((item, i) => (<PrincipleCard key={i} item={item} />))}
-                   </div>
-                 </div>
-              </div>
+                  ))}
+               </div>
+               <div className="bg-slate-800/50 p-8 rounded-[32px] border border-white/10 text-center">
+                  <p className="text-xs text-slate-500 uppercase font-black tracking-[0.3em] mb-4">Giudizio Sintetico Finale</p>
+                  <p className="text-2xl md:text-3xl text-white font-bold italic leading-relaxed">"{report.summary.judgment}"</p>
+               </div>
             </section>
           </div>
         );
@@ -432,7 +523,7 @@
                  <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">Ottimizza la Conversione con <br /><span className="text-indigo-400">Analisi AI Predittiva</span></h2>
                  <p className="text-slate-400 max-w-2xl text-lg mb-8 leading-relaxed">Carica uno screenshot della tua landing page.</p>
 
-                 <div className="w-full max-w-xl">
+                 <div className="w-full max-w-xl upload-section">
                    <label className={`flex flex-col items-center justify-center w-full rounded-2xl cursor-pointer transition-all duration-300 ${imagePreview ? 'border-2 border-indigo-500 bg-indigo-900/20 p-4' : 'h-64 border-2 border-dashed border-slate-700 hover:border-indigo-400 hover:bg-slate-800'}`}>
                       <div className="flex flex-col items-center justify-center">
                           {imagePreview ? (
@@ -477,7 +568,7 @@
                        <span className="bg-indigo-500/20 text-indigo-300 px-3 py-1 rounded-full text-sm font-medium border border-indigo-500/30">Generato da IA</span>
                      </div>
                      
-                     <div className="flex flex-wrap gap-3">
+                     <div className="flex flex-wrap gap-3 download-buttons">
                         <button 
                           disabled={isDownloading}
                           onClick={() => downloadReport('pdf')}
@@ -523,14 +614,13 @@
                       </div>
 
                       <div className="lg:col-span-5 grid grid-cols-2 gap-4 h-fit">
-                         <div className="col-span-2"><ScoreCard title="Punteggio Creativo Globale" score={result.scores.overall} color="text-indigo-400" description="Metrica combinata di design, contenuto e UX." /></div>
-                         <ScoreCard title="Design" score={result.scores.design} />
-                         <ScoreCard title="Contenuto" score={result.scores.content} />
-                         <ScoreCard title="UX" score={result.scores.ux} />
+                       <div className="col-span-2"><ScoreCard title="Indice di Conversione Lead" score={result.report.summary.overall} color="text-indigo-400" description="Valutazione complessiva basata su 10 parametri di persuasione." /></div>
+                       <ScoreCard title="Promessa" score={result.report.summary.scores["Promessa"]} />
+                       <ScoreCard title="Efficacia CTA" score={result.report.summary.scores["CTA"]} />
                          <div className="col-span-2 glass-panel p-6 rounded-xl mt-4 border border-slate-700">
-                           <h4 className="text-slate-400 text-sm uppercase tracking-wide font-bold mb-3">Riepilogo Esecutivo</h4>
-                           <p className="text-slate-200 text-base leading-relaxed">{result.conversionReport.conclusion.substring(0, 150)}...</p>
-                           <button onClick={() => window.scrollTo({ top: 1500, behavior: 'smooth' })} className="mt-4 text-indigo-400 text-base font-medium flex items-center gap-1 hover:text-indigo-300">Vedi Raccomandazioni Complete <ArrowRight className="w-5 h-5" /></button>
+                         <h4 className="text-slate-400 text-sm uppercase tracking-wide font-bold mb-3">Giudizio IA</h4>
+                         <p className="text-slate-200 text-base leading-relaxed italic">"{result.report.summary.judgment.substring(0, 150)}..."</p>
+                         <button onClick={() => window.scrollTo({ top: 1800, behavior: 'smooth' })} className="mt-4 text-indigo-400 text-base font-medium flex items-center gap-1 hover:text-indigo-300">Vedi Analisi Dettagliata <ArrowRight className="w-5 h-5" /></button>
                          </div>
                       </div>
                     </div>
