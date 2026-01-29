@@ -3,331 +3,357 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CreativeScore AI Pro - The Architect V14</title>
+    <title>The Architect V15 - Unified Audit System</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-        [x-cloak] { display: none !important; }
-        .glass-panel {
-            background: rgba(8, 10, 30, 0.94);
-            backdrop-filter: blur(24px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,200;0,800;1,200;1,800&display=swap');
+        
+        body { 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            background-color: #03040b; 
+            color: #cbd5e1;
         }
+        
+        .glass-card {
+            background: rgba(13, 17, 34, 0.6);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 32px;
+        }
+
+        .status-pill {
+            background: rgba(168, 85, 247, 0.1);
+            border: 1px solid rgba(168, 85, 247, 0.2);
+            padding: 4px 12px;
+            border-radius: 100px;
+            font-size: 10px;
+            font-weight: 800;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: #a855f7;
+        }
+
         .science-gradient {
             background: linear-gradient(135deg, #ec4899 0%, #8b5cf6 50%, #3b82f6 100%);
         }
-        .nlp-glow {
-            box-shadow: 0 0 40px -10px rgba(139, 92, 246, 0.4);
+
+        .score-gradient {
+            background: linear-gradient(135deg, #f472b6 0%, #6366f1 100%);
         }
-        .heat-point {
-            position: absolute;
-            border-radius: full;
-            background: radial-gradient(circle, rgba(239, 68, 68, 0.8) 0%, rgba(239, 68, 68, 0) 70%);
-            pointer-events: none;
-            mix-blend-mode: screen;
+
+        .nav-button {
+            padding: 10px 20px;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 12px;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            color: #94a3b8;
         }
-        .solution-accent { border-left: 4px solid #8b5cf6; }
-        .problem-accent { border-left: 4px solid #ef4444; }
+        .nav-button.active {
+            background: #a855f7;
+            color: white;
+        }
+
+        .problem-glow { border-left: 4px solid #ef4444; }
+        .solution-glow { background: rgba(16, 185, 129, 0.03); border: 1px solid rgba(16, 185, 129, 0.1); }
         
-        @keyframes pulse-soft {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.7; }
+        [x-cloak] { display: none !important; }
+
+        .circular-progress {
+            background: conic-gradient(#a855f7 var(--progress), rgba(255,255,255,0.05) 0deg);
+            border-radius: 50%;
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
         }
-        .animate-pulse-soft { animation: pulse-soft 3s infinite; }
+        .circular-progress::before {
+            content: "";
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            background: #0d1122;
+            border-radius: 50%;
+        }
     </style>
 </head>
-<body class="bg-[#02030d] text-slate-300 font-sans selection:bg-purple-500/30" x-data="appState()" x-cloak>
+<body x-data="theArchitect()" x-init="init()" class="antialiased">
 
     <!-- Header -->
-    <header class="fixed top-0 w-full z-[100] border-b border-white/5 bg-black/60 backdrop-blur-2xl">
-        <div class="max-w-[1800px] mx-auto px-10 h-24 flex items-center justify-between">
-            <div class="flex items-center gap-6 cursor-pointer" @click="reset">
-                <div class="w-14 h-14 science-gradient rounded-2xl flex items-center justify-center shadow-2xl">
-                    <i data-lucide="microscope" class="text-white w-8 h-8"></i>
+    <header class="fixed top-0 w-full z-50 border-b border-white/5 bg-[#03040b]/80 backdrop-blur-md">
+        <div class="max-w-[1400px] mx-auto h-20 px-6 flex items-center justify-between">
+            <div class="flex items-center gap-3 cursor-pointer" @click="reset">
+                <div class="w-9 h-9 science-gradient rounded-lg flex items-center justify-center">
+                    <i data-lucide="microscope" class="text-white w-5 h-5"></i>
                 </div>
-                <div>
-                    <h1 class="text-2xl font-black text-white tracking-tighter uppercase italic">The Architect <span class="text-purple-400">V14</span></h1>
-                    <span class="text-[10px] text-slate-500 font-black uppercase tracking-[0.4em]">Behavioural & NLP Lab</span>
-                </div>
+                <h1 class="text-lg font-black italic tracking-tighter text-white uppercase">The Architect <span class="text-purple-500">V15</span></h1>
             </div>
 
-            <nav class="hidden lg:flex items-center bg-white/5 p-1 rounded-2xl border border-white/10" x-show="analysisDone">
-                <template x-for="tab in tabs">
-                    <button @click="activeTab = tab.id" 
-                            :class="activeTab === tab.id ? 'bg-purple-600 text-white shadow-lg' : 'text-slate-500 hover:text-white'"
-                            class="px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
-                        <span x-text="tab.label"></span>
-                    </button>
-                </template>
+            <nav class="hidden md:flex bg-white/5 p-1 rounded-xl border border-white/10" x-show="isReady">
+                <button @click="activeTab = 'all'" :class="activeTab === 'all' ? 'active' : ''" class="nav-button">Dashboard</button>
+                <button @click="activeTab = 'behavioural'" :class="activeTab === 'behavioural' ? 'active' : ''" class="nav-button">Behavioural</button>
+                <button @click="activeTab = 'nlp'" :class="activeTab === 'nlp' ? 'active' : ''" class="nav-button">NLP Audit</button>
+                <button @click="activeTab = 'elementor'" :class="activeTab === 'elementor' ? 'active' : ''" class="nav-button">Elementor Lab</button>
             </nav>
 
-            <button class="px-8 py-3 bg-white text-black text-[11px] font-black uppercase rounded-xl hover:bg-purple-500 hover:text-white transition-all">
-                Esporta Report Strategico
+            <button class="px-5 py-2 bg-white text-black font-black text-[10px] uppercase rounded-lg hover:bg-purple-500 hover:text-white transition-all">
+                Esporta Report PDF
             </button>
         </div>
     </header>
 
-    <main class="pt-36 pb-20 max-w-[1800px] mx-auto px-10">
+    <main class="pt-32 pb-20 max-w-[1400px] mx-auto px-6">
         
         <!-- Welcome Screen -->
-        <template x-if="!analysisDone">
-            <div class="max-w-4xl mx-auto py-20 text-center space-y-12">
-                <div class="inline-block px-5 py-2 rounded-full border border-purple-500/30 bg-purple-500/5 text-purple-400 text-xs font-black uppercase tracking-widest">
-                    Cognitive Diagnostic Suite
+        <div x-show="!isReady" class="text-center py-20">
+            <h2 class="text-6xl font-black text-white italic mb-10 uppercase tracking-tighter leading-none">Diagnosi<br><span class="text-purple-500 italic">Multi-Livello.</span></h2>
+            <div class="max-w-xl mx-auto glass-card p-12 border-dashed border-2 border-white/10 hover:border-purple-500/40 transition-all cursor-pointer relative shadow-2xl">
+                <input type="file" class="absolute inset-0 opacity-0 cursor-pointer" @change="startAnalysis">
+                <div x-show="!isAnalyzing">
+                    <i data-lucide="cloud-upload" class="w-16 h-16 mx-auto text-purple-500 mb-6"></i>
+                    <p class="text-xl font-bold text-white uppercase italic">Carica lo Screenshot della Landing</p>
+                    <p class="text-slate-500 text-xs mt-4 uppercase tracking-widest font-black">Analisi 5/7 Unificata</p>
                 </div>
-                <h2 class="text-8xl font-black text-white tracking-tighter leading-[0.8]">
-                    Vendi con la <span class="text-transparent bg-clip-text science-gradient">Scienza.</span>
-                </h2>
-                <p class="text-xl text-slate-400 max-w-2xl mx-auto">
-                    Analizziamo i bias cognitivi e i pattern linguistici della tua landing. Forniamo spiegazioni profonde e soluzioni immediate per il mercato di Bergamo.
-                </p>
+                <div x-show="isAnalyzing" class="space-y-4">
+                    <div class="w-12 h-12 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
+                    <p class="text-purple-400 text-xs font-black uppercase tracking-widest" x-text="statusMsg"></p>
+                </div>
+            </div>
+        </div>
 
-                <label class="group block relative cursor-pointer p-1 rounded-[40px] overflow-hidden max-w-2xl mx-auto">
-                    <input type="file" class="hidden" @change="handleUpload">
-                    <div class="relative bg-slate-950 p-20 rounded-[38px] border border-white/10 group-hover:bg-slate-900 transition-all">
-                        <div x-show="!isAnalyzing" class="space-y-6">
-                            <i data-lucide="scan-eye" class="w-16 h-16 text-purple-400 mx-auto animate-pulse"></i>
-                            <p class="text-2xl font-black text-white italic">Trascina Screenshot Landing</p>
-                        </div>
-                        <div x-show="isAnalyzing" class="space-y-6">
-                            <div class="w-16 h-16 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
-                            <p class="text-purple-400 font-black uppercase tracking-[0.3em]" x-text="analysisStep"></p>
+        <!-- Dashboard Layout -->
+        <div x-show="isReady" x-cloak class="space-y-16">
+            
+            <!-- Top Section: Overview & Trust -->
+            <div class="grid lg:grid-cols-12 gap-8">
+                <!-- Visual Analysis (Left) -->
+                <div class="lg:col-span-4 space-y-6">
+                    <div class="glass-card overflow-hidden aspect-[9/16] relative bg-slate-950 border-white/10">
+                        <img :src="imgUrl" class="w-full h-full object-cover opacity-40">
+                        <div class="absolute inset-0 bg-radial-gradient from-red-500/20 to-transparent mix-blend-overlay"></div>
+                        <div class="absolute bottom-6 left-6 right-6 p-5 bg-black/80 backdrop-blur-md rounded-2xl border border-white/10">
+                            <span class="status-pill mb-2 inline-block">Eyetracking Active</span>
+                            <p class="text-sm font-bold text-white italic">"Fissazione oculare dispersa: l'utente ignora l'H1 per concentrarsi su elementi decorativi."</p>
                         </div>
                     </div>
-                </label>
-            </div>
-        </template>
+                </div>
 
-        <!-- Main Dashboard -->
-        <template x-if="analysisDone">
-            <div class="grid grid-cols-1 xl:grid-cols-12 gap-10">
-                
-                <!-- Center/Left: Visual Diagnostic -->
-                <div class="xl:col-span-7 space-y-10">
-                    
-                    <!-- Visual Layer -->
-                    <div class="glass-panel rounded-[48px] overflow-hidden relative min-h-[700px] nlp-glow">
-                        <div class="absolute top-8 left-1/2 -translate-x-1/2 z-[60] bg-black/80 backdrop-blur-xl p-1.5 rounded-2xl border border-white/10 flex gap-1 shadow-2xl">
-                            <button @click="viewMode = 'eyetracking'" :class="viewMode === 'eyetracking' ? 'bg-purple-600' : ''" class="px-6 py-2.5 rounded-xl text-[10px] font-black uppercase text-white transition-all">Eyetracking</button>
-                            <button @click="viewMode = 'nlp'" :class="viewMode === 'nlp' ? 'bg-purple-600' : ''" class="px-6 py-2.5 rounded-xl text-[10px] font-black uppercase text-white transition-all">NLP Anchor</button>
+                <!-- Strategic Summary (Right) -->
+                <div class="lg:col-span-8 space-y-8">
+                    <!-- Local Trust Card -->
+                    <div class="glass-card p-8 border-emerald-500/10">
+                        <div class="flex items-center justify-between mb-8">
+                            <div class="flex items-center gap-3">
+                                <i data-lucide="navigation" class="text-emerald-400 w-5 h-5"></i>
+                                <h3 class="text-white font-black uppercase italic tracking-wider">Bergamo Local Trust</h3>
+                            </div>
+                            <div class="text-right">
+                                <span class="text-emerald-400 text-2xl font-black italic">82/100</span>
+                            </div>
                         </div>
-
-                        <div class="flex items-center justify-center p-12">
-                            <div class="relative w-full max-w-sm aspect-[9/19] rounded-[50px] border-[12px] border-slate-900 shadow-2xl overflow-hidden">
-                                <img :src="imageUrl" class="w-full h-full object-cover object-top" :class="viewMode !== 'raw' ? 'opacity-30 blur-[3px] grayscale' : ''">
-                                
-                                <template x-if="viewMode === 'eyetracking'">
-                                    <div class="absolute inset-0">
-                                        <div class="heat-point w-48 h-48 top-[12%] left-[10%] bg-red-500/60 blur-[45px] animate-pulse-soft"></div>
-                                        <div class="heat-point w-32 h-32 top-[65%] left-[35%] bg-yellow-500/40 blur-[30px]"></div>
-                                        <div class="absolute top-[68%] left-[25%] p-2 bg-yellow-600 text-white text-[8px] font-black rounded uppercase">Attention Leak</div>
-                                    </div>
-                                </template>
+                        <div class="grid md:grid-cols-2 gap-6">
+                            <div class="p-5 bg-white/5 rounded-2xl border border-white/5">
+                                <p class="text-[10px] font-black text-slate-500 uppercase mb-2">Dialetto Visuale</p>
+                                <p class="text-sm italic font-medium leading-relaxed">"Evita stock photos. Usa scatti reali di Bergamo per aumentare la conversione del 15%."</p>
+                            </div>
+                            <div class="p-5 bg-white/5 rounded-2xl border border-white/5">
+                                <p class="text-[10px] font-black text-slate-500 uppercase mb-2">Geo-Proofing</p>
+                                <p class="text-sm italic font-medium leading-relaxed">"Menziona la vicinanza (es. Seriate, Dalmine) per abbassare le difese d'acquisto."</p>
                             </div>
                         </div>
                     </div>
 
-                    <!-- DETAILED DIAGNOSTICS & SOLUTIONS -->
-                    <div class="space-y-6">
-                        <h3 class="text-2xl font-black text-white uppercase italic tracking-tighter">Deep Diagnostic Center</h3>
+                    <!-- Performance & Score Row -->
+                    <div class="grid md:grid-cols-2 gap-8">
+                        <div class="glass-card p-8 flex flex-col justify-center items-center score-gradient shadow-2xl shadow-indigo-500/20">
+                            <p class="text-white/80 text-[10px] font-black uppercase tracking-[0.3em] mb-4">Global Readiness Score</p>
+                            <div class="flex items-baseline gap-1">
+                                <span class="text-8xl font-black text-white italic tracking-tighter">48</span>
+                                <span class="text-2xl font-bold text-white/50">/100</span>
+                            </div>
+                            <div class="mt-6 px-6 py-2 bg-black/20 rounded-full text-[10px] font-black text-white uppercase">
+                                +42% Margine di Crescita
+                            </div>
+                        </div>
                         
-                        <!-- Diagnostic Card: Eyetracking -->
-                        <div class="glass-panel p-8 rounded-[32px] border-l-4 border-red-500/50">
-                            <div class="flex justify-between items-start mb-6">
+                        <div class="glass-card p-8 space-y-6">
+                            <div class="flex items-center justify-between">
                                 <div class="flex items-center gap-3">
-                                    <div class="w-10 h-10 rounded-xl bg-red-500/10 flex items-center justify-center text-red-500">
-                                        <i data-lucide="eye"></i>
-                                    </div>
-                                    <h4 class="text-white font-black uppercase tracking-widest text-sm">Analisi Eyetracking</h4>
+                                    <i data-lucide="cpu" class="text-blue-400 w-5 h-5"></i>
+                                    <h3 class="text-white font-black uppercase italic tracking-wider">Elementor Lab</h3>
                                 </div>
-                                <span class="px-3 py-1 bg-red-500/10 text-red-500 text-[10px] font-black rounded-lg">CRITICO</span>
+                                <span class="text-blue-400 font-black italic">65/100</span>
                             </div>
-                            <div class="grid md:grid-cols-2 gap-8">
-                                <div class="space-y-4">
-                                    <p class="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Problematica Rilevata</p>
-                                    <p class="text-sm text-slate-300 leading-relaxed italic">"Lo sguardo degli utenti si disperde nel carosello portfolio prima di leggere la Value Proposition. Il CTA primario cade in una 'zona d'ombra' visiva."</p>
+                            <div class="space-y-4">
+                                <div class="flex justify-between items-start border-b border-white/5 pb-3">
+                                    <span class="text-xs font-bold text-slate-300">DOM Depth (Nesting)</span>
+                                    <span class="text-[10px] text-rose-400 font-black uppercase tracking-widest">35%</span>
                                 </div>
-                                <div class="space-y-4 p-5 bg-white/5 rounded-2xl border border-white/5">
-                                    <p class="text-[10px] font-black text-emerald-400 uppercase tracking-[0.2em]">Soluzione Architetto</p>
-                                    <ul class="text-xs text-slate-400 space-y-3">
-                                        <li class="flex items-start gap-2">
-                                            <i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-500 mt-0.5 shrink-0"></i>
-                                            <span><strong>F-Pattern Fix:</strong> Sposta il modulo contatti in alto a destra o centralo subito dopo l'H1.</span>
-                                        </li>
-                                        <li class="flex items-start gap-2">
-                                            <i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-500 mt-0.5 shrink-0"></i>
-                                            <span><strong>Directional Cues:</strong> Usa frecce o linee grafiche che guidano l'occhio verso il bottone 'Inizia Progetto'.</span>
-                                        </li>
-                                    </ul>
+                                <div class="flex justify-between items-start border-b border-white/5 pb-3">
+                                    <span class="text-xs font-bold text-slate-300">Asset Bloat</span>
+                                    <span class="text-[10px] text-amber-400 font-black uppercase tracking-widest">55%</span>
                                 </div>
-                            </div>
-                        </div>
-
-                        <!-- Diagnostic Card: NLP -->
-                        <div class="glass-panel p-8 rounded-[32px] border-l-4 border-purple-500/50">
-                            <div class="flex justify-between items-start mb-6">
-                                <div class="flex items-center gap-3">
-                                    <div class="w-10 h-10 rounded-xl bg-purple-500/10 flex items-center justify-center text-purple-500">
-                                        <i data-lucide="message-square"></i>
-                                    </div>
-                                    <h4 class="text-white font-black uppercase tracking-widest text-sm">Analisi Linguistica (NLP)</h4>
-                                </div>
-                                <span class="px-3 py-1 bg-purple-500/10 text-purple-500 text-[10px] font-black rounded-lg">MIGLIORABILE</span>
-                            </div>
-                            <div class="grid md:grid-cols-2 gap-8">
-                                <div class="space-y-4">
-                                    <p class="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Problematica Rilevata</p>
-                                    <p class="text-sm text-slate-300 leading-relaxed italic">"Mancanza di 'Future Pace'. Il copy descrive cosa fai OGGI, ma non proietta il cliente nel successo di DOMANI. Predicati troppo verbali e poco sensoriali."</p>
-                                </div>
-                                <div class="space-y-4 p-5 bg-white/5 rounded-2xl border border-white/5">
-                                    <p class="text-[10px] font-black text-emerald-400 uppercase tracking-[0.2em]">Soluzione Architetto</p>
-                                    <ul class="text-xs text-slate-400 space-y-3">
-                                        <li class="flex items-start gap-2">
-                                            <i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-500 mt-0.5 shrink-0"></i>
-                                            <span><strong>Swish Copy:</strong> Inserisci una frase che cancelli il dolore attuale: "Dimentica i preventivi vuoti (Pain) e immagina il tuo telefono che squilla ogni mattina (Gain)".</span>
-                                        </li>
-                                        <li class="flex items-start gap-2">
-                                            <i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-500 mt-0.5 shrink-0"></i>
-                                            <span><strong>Modalità Sensoriali:</strong> Usa "Vedi i tuoi numeri crescere" (Visivo) o "Tocca con mano i risultati" (Cinestesico).</span>
-                                        </li>
-                                    </ul>
-                                </div>
+                                <p class="text-[10px] text-slate-500 italic mt-2">Usa Elementor Grid per ridurre il peso del codice.</p>
                             </div>
                         </div>
                     </div>
-                </div>
-
-                <!-- Right Column: Strategic Metrics & Local Context -->
-                <div class="xl:col-span-5 space-y-8">
-                    
-                    <!-- Behavioural Science: The Bergamo Factor -->
-                    <div class="glass-panel p-8 rounded-[40px] border-emerald-500/20">
-                        <div class="flex items-center gap-3 mb-8">
-                            <i data-lucide="users" class="text-emerald-400 w-6 h-6"></i>
-                            <h3 class="text-white font-black text-xs uppercase tracking-widest">Behavioural Science: Bergamo Bias</h3>
-                        </div>
-                        <div class="space-y-8">
-                            <div class="p-6 bg-white/5 rounded-3xl border border-white/5">
-                                <div class="flex justify-between mb-4">
-                                    <span class="text-[11px] font-bold text-slate-400 uppercase">Social Proof Locale</span>
-                                    <span class="text-emerald-400 font-black">60%</span>
-                                </div>
-                                <p class="text-xs text-slate-500 leading-relaxed">
-                                    <strong>Problema:</strong> Il cliente di Bergamo è scettico verso le agenzie "da remoto". Vuole sentire l'odore della sede fisica.
-                                    <br><br>
-                                    <strong class="text-emerald-400">Soluzione:</strong> Inserisci il caso studio "I Buoni Sani" con foto del locale reale a Bergamo. Questo attiva l'euristica della familiarità.
-                                </p>
-                            </div>
-                            
-                            <div class="p-6 bg-white/5 rounded-3xl border border-white/5">
-                                <div class="flex justify-between mb-4">
-                                    <span class="text-[11px] font-bold text-slate-400 uppercase">Ancoraggio del Valore</span>
-                                    <span class="text-emerald-400 font-black">40%</span>
-                                </div>
-                                <p class="text-xs text-slate-500 leading-relaxed">
-                                    <strong>Problema:</strong> Non c'è un'ancora di prezzo o di tempo. Il servizio sembra un costo infinito.
-                                    <br><br>
-                                    <strong class="text-emerald-400">Soluzione:</strong> "Sito pronto in 21 giorni" + "Recupero investimento stimato in 4 mesi". Crea un'ancora temporale certa.
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Elementor Efficiency & SEO -->
-                    <div class="glass-panel p-8 rounded-[40px] border-blue-500/20">
-                        <h3 class="text-white font-black text-xs uppercase tracking-widest mb-6">Elementor & SEO Health</h3>
-                        <div class="space-y-4">
-                            <div class="p-4 bg-white/5 rounded-2xl flex justify-between items-center">
-                                <div>
-                                    <p class="text-[11px] font-bold text-white">LCP (Immagini Hero)</p>
-                                    <p class="text-[10px] text-rose-400 uppercase">Problematico (> 3s)</p>
-                                </div>
-                                <div class="text-[10px] text-blue-300 bg-blue-500/10 px-3 py-1 rounded-lg border border-blue-500/30">
-                                    WebP + Lazy Off
-                                </div>
-                            </div>
-                            <div class="p-4 bg-white/5 rounded-2xl flex justify-between items-center">
-                                <div>
-                                    <p class="text-[11px] font-bold text-white">H1 Keyword Mapping</p>
-                                    <p class="text-[10px] text-emerald-400 uppercase">Ottimizzato (Bergamo)</p>
-                                </div>
-                                <i data-lucide="check-circle" class="text-emerald-500 w-5 h-5"></i>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Global Conversion Score -->
-                    <div class="glass-panel p-10 rounded-[48px] science-gradient text-white">
-                        <p class="text-[10px] font-black uppercase tracking-[0.3em] mb-2 opacity-80">Conversion Probability</p>
-                        <div class="flex items-end gap-2 mb-6">
-                            <span class="text-6xl font-black">54</span>
-                            <span class="text-xl font-bold opacity-60">/100</span>
-                        </div>
-                        <div class="p-4 bg-black/20 rounded-2xl backdrop-blur-md">
-                            <p class="text-xs font-medium leading-relaxed italic">
-                                "Applicando le 3 soluzioni proposte (Eyetracking Fix, Future Pace Copy e Local Trust Anchor), il punteggio stimato salirà a 88/100."
-                            </p>
-                        </div>
-                    </div>
-
                 </div>
             </div>
-        </template>
+
+            <!-- Consolidated Audit Sections -->
+            <div class="space-y-16">
+                <template x-for="section in auditData" :key="section.id">
+                    <div x-show="activeTab === 'all' || activeTab === section.category" class="space-y-8 animate-in fade-in duration-500">
+                        
+                        <!-- Section Header with Individual Score -->
+                        <div class="flex items-center justify-between px-4">
+                            <h3 class="text-3xl font-black text-white italic uppercase tracking-tighter flex items-center gap-4">
+                                <span class="w-12 h-[3px] bg-purple-500"></span>
+                                <span x-text="section.title"></span>
+                            </h3>
+                            <div class="flex items-center gap-4 bg-white/5 px-6 py-3 rounded-2xl border border-white/10">
+                                <span class="text-[10px] font-black uppercase text-slate-500 tracking-widest">Section Score</span>
+                                <span class="text-2xl font-black italic" :class="section.score > 70 ? 'text-emerald-400' : 'text-amber-500'" x-text="section.score + '%'"></span>
+                            </div>
+                        </div>
+                        
+                        <div class="grid gap-8">
+                            <template x-for="item in section.items" :key="item.label">
+                                <div class="glass-card p-10 group hover:border-purple-500/30 transition-all">
+                                    <div class="grid md:grid-cols-2 gap-12 items-start">
+                                        <!-- Problema -->
+                                        <div class="space-y-6 problem-glow pl-8 relative">
+                                            <div class="flex items-center justify-between">
+                                                <div class="flex items-center gap-2 text-rose-500">
+                                                    <i data-lucide="alert-circle" class="w-5 h-5"></i>
+                                                    <span class="text-[10px] font-black uppercase tracking-widest">Criticality: <span x-text="item.criticality"></span></span>
+                                                </div>
+                                            </div>
+                                            <h4 class="text-2xl font-black text-white italic uppercase leading-none tracking-tight" x-text="item.label"></h4>
+                                            <p class="text-slate-400 text-lg leading-relaxed italic" x-text="item.problem"></p>
+                                        </div>
+                                        
+                                        <!-- Soluzione -->
+                                        <div class="p-8 rounded-[32px] solution-glow space-y-6 border border-emerald-500/10">
+                                            <div class="flex items-center justify-between">
+                                                <div class="flex items-center gap-2 text-emerald-400">
+                                                    <i data-lucide="zap" class="w-5 h-5"></i>
+                                                    <span class="text-[10px] font-black uppercase tracking-widest">Strategy</span>
+                                                </div>
+                                                <span class="text-[10px] font-black text-emerald-500 uppercase px-3 py-1 bg-emerald-500/10 rounded-full">ROI: +<span x-text="item.roi"></span>%</span>
+                                            </div>
+                                            <p class="text-white text-xl font-bold italic leading-snug" x-text="item.solution"></p>
+                                            <div class="flex items-center gap-4 pt-2">
+                                                <div class="flex -space-x-2">
+                                                    <div class="w-8 h-8 rounded-full bg-slate-800 border-2 border-indigo-500 flex items-center justify-center text-[10px] font-bold">W</div>
+                                                    <div class="w-8 h-8 rounded-full bg-slate-800 border-2 border-emerald-500 flex items-center justify-center text-[10px] font-bold">E</div>
+                                                </div>
+                                                <span class="text-[10px] uppercase font-black text-slate-500">Compatibile WordPress + Elementor</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                </template>
+            </div>
+
+        </div>
     </main>
 
     <script>
-        function appState() {
+        function theArchitect() {
             return {
+                isReady: false,
                 isAnalyzing: false,
-                analysisDone: false,
-                analysisStep: '',
-                imageUrl: null,
-                activeTab: 'summary',
-                viewMode: 'eyetracking',
-                tabs: [
-                    { id: 'summary', label: 'Dashboard' },
-                    { id: 'science', label: 'Behavioural' },
-                    { id: 'nlp', label: 'NLP Audit' },
-                    { id: 'seo', label: 'Elementor Lab' }
+                statusMsg: '',
+                activeTab: 'all',
+                imgUrl: null,
+                auditData: [
+                    {
+                        id: 1,
+                        category: 'behavioural',
+                        title: 'Behavioural Logic',
+                        score: 42,
+                        items: [
+                            {
+                                label: 'Inversione Effetto Primacy',
+                                problem: "L'utente memorizza il portfolio ma dimentica la soluzione offerta perché l'H1 è graficamente meno impattante delle immagini.",
+                                solution: "Ingrandisci l'H1 del 30% e usa un colore a contrasto. Inserisci la 'Main Promise' nei primi 3 secondi di scansione oculare.",
+                                criticality: 'High',
+                                roi: '25'
+                            },
+                            {
+                                label: 'Assenza di Loss Aversion',
+                                problem: "La pagina non comunica cosa perde il cliente non agendo ora. Il cervello rettile non percepisce urgenza biologica.",
+                                solution: "Aggiungi un micro-copy sotto la CTA: 'Solo 2 slot disponibili per progetti SEO questo mese a Bergamo'.",
+                                criticality: 'Medium',
+                                roi: '12'
+                            }
+                        ]
+                    },
+                    {
+                        id: 2,
+                        category: 'nlp',
+                        title: 'Neurolinguistic Audit',
+                        score: 58,
+                        items: [
+                            {
+                                label: 'Nominalizzazioni Vuote',
+                                problem: "Usi parole astratte come 'Qualità' e 'Soluzioni'. Queste non attivano i neuroni specchio del cliente.",
+                                solution: "Trasforma i sostantivi in verbi: 'Portiamo il tuo sito in prima pagina' invece di 'Ottimizzazione del posizionamento'.",
+                                criticality: 'High',
+                                roi: '18'
+                            }
+                        ]
+                    },
+                    {
+                        id: 3,
+                        category: 'elementor',
+                        title: 'Elementor Performance Lab',
+                        score: 65,
+                        items: [
+                            {
+                                label: 'DOM Nesting Bloat',
+                                problem: "Eccessiva profondità dei container Elementor. Rallenta il rendering mobile e peggiora i Core Web Vitals.",
+                                solution: "Converti le sezioni in Elementor Grid (CSS Grid). Riduci i wrapper nidificati da 7 a 2 livelli.",
+                                criticality: 'Critical',
+                                roi: '30'
+                            }
+                        ]
+                    }
                 ],
-                
-                async handleUpload(e) {
-                    const file = e.target.files[0];
-                    if (!file) return;
-
-                    const reader = new FileReader();
-                    reader.onload = async (event) => {
-                        this.imageUrl = event.target.result;
-                        this.isAnalyzing = true;
-                        
-                        const steps = [
-                            { text: 'Mappatura Eyetracking (AI Saliency)...', delay: 1000 },
-                            { text: 'Analisi Euristiche Decisionali B2B...', delay: 1200 },
-                            { text: 'Estrazione Pattern Linguistici NLP...', delay: 1000 },
-                            { text: 'Simulazione Soluzioni Elementor...', delay: 800 }
-                        ];
-
-                        for (const step of steps) {
-                            this.analysisStep = step.text;
-                            await new Promise(r => setTimeout(r, step.delay));
-                        }
-
-                        this.isAnalyzing = false;
-                        this.analysisDone = true;
-                        
-                        setTimeout(() => { if (window.lucide) window.lucide.createIcons(); }, 100);
-                    };
-                    reader.readAsDataURL(file);
+                init() {
+                    lucide.createIcons();
                 },
-
+                async startAnalysis(e) {
+                    const file = e.target.files[0];
+                    if(!file) return;
+                    this.imgUrl = URL.createObjectURL(file);
+                    this.isAnalyzing = true;
+                    
+                    const steps = ['Scansione Retina...', 'Analisi NLP...', 'Check Performance Elementor...', 'Sincronizzazione Punteggi...'];
+                    for(let step of steps) {
+                        this.statusMsg = step;
+                        await new Promise(r => setTimeout(r, 800));
+                    }
+                    
+                    this.isAnalyzing = false;
+                    this.isReady = true;
+                    this.$nextTick(() => lucide.createIcons());
+                },
                 reset() {
-                    this.analysisDone = false;
-                    this.imageUrl = null;
+                    this.isReady = false;
+                    this.imgUrl = null;
                 }
             }
         }
     </script>
-
     <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
 </body>
 </html>
