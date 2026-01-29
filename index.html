@@ -1,359 +1,604 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Architect V15 - Unified Audit System</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CreativeScore AI - Analizzatore CRO & Comportamentale</title>
+    
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <!-- Fonts -->
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,200;0,800;1,200;1,800&display=swap');
-        
-        body { 
-            font-family: 'Plus Jakarta Sans', sans-serif; 
-            background-color: #03040b; 
-            color: #cbd5e1;
-        }
-        
-        .glass-card {
-            background: rgba(13, 17, 34, 0.6);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            border-radius: 32px;
-        }
-
-        .status-pill {
-            background: rgba(168, 85, 247, 0.1);
-            border: 1px solid rgba(168, 85, 247, 0.2);
-            padding: 4px 12px;
-            border-radius: 100px;
-            font-size: 10px;
-            font-weight: 800;
-            letter-spacing: 0.1em;
-            text-transform: uppercase;
-            color: #a855f7;
-        }
-
-        .science-gradient {
-            background: linear-gradient(135deg, #ec4899 0%, #8b5cf6 50%, #3b82f6 100%);
-        }
-
-        .score-gradient {
-            background: linear-gradient(135deg, #f472b6 0%, #6366f1 100%);
-        }
-
-        .nav-button {
-            padding: 10px 20px;
-            border-radius: 12px;
-            font-weight: 700;
-            font-size: 12px;
-            transition: all 0.3s ease;
-            text-transform: uppercase;
-            color: #94a3b8;
-        }
-        .nav-button.active {
-            background: #a855f7;
-            color: white;
-        }
-
-        .problem-glow { border-left: 4px solid #ef4444; }
-        .solution-glow { background: rgba(16, 185, 129, 0.03); border: 1px solid rgba(16, 185, 129, 0.1); }
-        
-        [x-cloak] { display: none !important; }
-
-        .circular-progress {
-            background: conic-gradient(#a855f7 var(--progress), rgba(255,255,255,0.05) 0deg);
-            border-radius: 50%;
-            width: 48px;
-            height: 48px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-        }
-        .circular-progress::before {
-            content: "";
-            position: absolute;
-            width: 40px;
-            height: 40px;
-            background: #0d1122;
-            border-radius: 50%;
-        }
+      @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+      body {
+        font-family: 'Inter', sans-serif;
+        background-color: #0f172a;
+        color: #f8fafc;
+        min-height: 100vh;
+      }
+      .glass-panel {
+        background: rgba(30, 41, 59, 0.7);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+      }
+      .animate-fade-in-up {
+        animation: fadeInUp 0.5s ease-out;
+      }
+      @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      /* Custom scrollbar */
+      ::-webkit-scrollbar {
+        width: 8px;
+      }
+      ::-webkit-scrollbar-track {
+        background: #0f172a; 
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #334155; 
+        border-radius: 4px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: #475569; 
+      }
+      .cursor-wait {
+        cursor: wait;
+      }
     </style>
+
+    <!-- Import Map per gestire le dipendenze React ed esterne direttamente nel browser -->
+    <script type="importmap">
+{
+  "imports": {
+    "react": "https://esm.sh/react@18.2.0",
+    "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
+    "lucide-react": "https://esm.sh/lucide-react@0.294.0",
+    "@google/genai": "https://esm.sh/@google/genai@0.1.1",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.4/",
+    "react/": "https://esm.sh/react@^19.2.4/"
+  }
+}
+</script>
+    
+    <!-- Babel Standalone per compilare JSX nel browser -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 </head>
-<body x-data="theArchitect()" x-init="init()" class="antialiased">
+<body>
+    <div id="root"></div>
 
-    <!-- Header -->
-    <header class="fixed top-0 w-full z-50 border-b border-white/5 bg-[#03040b]/80 backdrop-blur-md">
-        <div class="max-w-[1400px] mx-auto h-20 px-6 flex items-center justify-between">
-            <div class="flex items-center gap-3 cursor-pointer" @click="reset">
-                <div class="w-9 h-9 science-gradient rounded-lg flex items-center justify-center">
-                    <i data-lucide="microscope" class="text-white w-5 h-5"></i>
-                </div>
-                <h1 class="text-lg font-black italic tracking-tighter text-white uppercase">The Architect <span class="text-purple-500">V15</span></h1>
-            </div>
+    <script type="text/babel" data-type="module" data-presets="typescript,react">
+      import React, { useState, useCallback } from 'react';
+      import { createRoot } from 'react-dom/client';
+      import { 
+        Upload, ScanEye, Sparkles, AlertCircle, Loader2, ArrowRight,
+        CheckCircle2, AlertTriangle, Lightbulb, Brain, Activity, MessageSquareQuote, Zap, Search, ArrowRightCircle
+      } from 'lucide-react';
+      import { GoogleGenAI, Type } from "@google/genai";
 
-            <nav class="hidden md:flex bg-white/5 p-1 rounded-xl border border-white/10" x-show="isReady">
-                <button @click="activeTab = 'all'" :class="activeTab === 'all' ? 'active' : ''" class="nav-button">Dashboard</button>
-                <button @click="activeTab = 'behavioural'" :class="activeTab === 'behavioural' ? 'active' : ''" class="nav-button">Behavioural</button>
-                <button @click="activeTab = 'nlp'" :class="activeTab === 'nlp' ? 'active' : ''" class="nav-button">NLP Audit</button>
-                <button @click="activeTab = 'elementor'" :class="activeTab === 'elementor' ? 'active' : ''" class="nav-button">Elementor Lab</button>
-            </nav>
+      // --- CONFIGURAZIONE ---
+      // Se vuoi hardcodare la chiave per uso personale, inseriscila qui sotto.
+      // Altrimenti lascia vuoto e l'app userà un meccanismo di fallback o potrai implementare un input utente.
+      const HARDCODED_API_KEY = ""; 
+      
+      // Polyfill per process.env per evitare crash se il codice originale lo referenziava
+      window.process = window.process || { env: { API_KEY: HARDCODED_API_KEY } };
 
-            <button class="px-5 py-2 bg-white text-black font-black text-[10px] uppercase rounded-lg hover:bg-purple-500 hover:text-white transition-all">
-                Esporta Report PDF
-            </button>
-        </div>
-    </header>
+      // --- TYPES & ENUMS ---
+      // Definiamo i tipi internamente per TypeScript (Babel li gestirà ignorandoli nel transpile)
 
-    <main class="pt-32 pb-20 max-w-[1400px] mx-auto px-6">
+      enum AnalysisStatus {
+        IDLE = 'IDLE',
+        ANALYZING = 'ANALYZING',
+        COMPLETE = 'COMPLETE',
+        ERROR = 'ERROR'
+      }
+
+      // --- GEMINI SERVICE ---
+
+      const SYSTEM_INSTRUCTION = `
+Sei un esperto di livello mondiale in Ottimizzazione del Tasso di Conversione (CRO), Neuro-Marketing e Scienze Comportamentali.
+Il tuo compito è analizzare screenshot di landing page fornendo un report strutturato e professionale identico agli standard di "Creative Score".
+
+Devi generare un'analisi profonda divisa in 4 sezioni principali.
+
+1. **Analisi Conversione & UX (Stile PDF Pagina 1 e 2)**:
+   - Identifica Punti di Forza e Debolezze.
+   - **Raccomandazioni Strategiche**: Devi fornire suggerimenti specifici. Per ogni suggerimento usa questo formato rigoroso:
+     - *Titolo*: L'azione consigliata (es. "Ottimizza la gerarchia del testo").
+     - *Analisi*: Cosa c'è attualmente nella pagina (osservazione oggettiva dello stato attuale).
+     - *Ragionamento*: Perché la modifica aumenterà la conversione (spiegazione scientifica/psicologica).
+
+2. **Scienze Comportamentali (Analisi Completa - Pagina 3 PDF)**:
+   Devi analizzare la pagina rispetto a TUTTI i seguenti principi. Per ognuno, indica se è "applicato", "mancante" o "parziale", fornisci una "Valutazione" (osservazione) e un suggerimento "Come potrebbe essere".
+   
+   Lista dei Principi da analizzare:
+   - **Anchoring (Ancoraggio)**
+   - **Authority (Autorità)**
+   - **Availability Heuristic**
+   - **Bandwagon Effect**
+   - **Cognitive Dissonance**
+   - **Commitment and Consistency**
+   - **Decoy Effect (Effetto Esca)**
+   - **Default Effect**
+   - **Emotional Appeal**
+   - **Endowment Effect**
+   - **Framing**
+   - **Frequency Illusion**
+   - **Hyperbolic Discounting**
+   - **In-group Favoritism**
+   - **Loss Aversion**
+   - **Paradox of Choice**
+   - **Priming**
+   - **Reciprocity**
+   - **Scarcity (Scarsità)**
+   - **Social Proof (Riprova Sociale)**
+
+3. **NLP & Copywriting (Analisi Completa - Pagina 4 PDF)**:
+   Analizza il testo usando questi principi NLP specifici:
+   - Anchoring (NLP), Belief Change, Calibration, Chunking, Logical Levels, Meta Programs, Meta-Modeling, Milton Model, Pacing and Leading, Pattern Interrupts, Perceptual Positions, Rapport Building, Reframing, Representational Systems, Sensory Acuity, Strategy Elicitation, Submodalities, Swish Pattern, Timeline Therapy, Well-Formed Outcomes.
+   Includi anche: Tono di voce, Livello di lettura e Trigger emotivi.
+
+4. **Eye Tracking Predittivo**:
+   Genera coordinate per una heatmap basata sulla salienza visiva (contrasto, volti, CTA).
+
+IMPORTANTE: Rispondi ESCLUSIVAMENTE in ITALIANO.
+Sii critico e professionale. Non inventare dati, basati su ciò che vedi nell'immagine.
+`;
+
+      const RESPONSE_SCHEMA = {
+        type: Type.OBJECT,
+        properties: {
+          scores: {
+            type: Type.OBJECT,
+            properties: {
+              overall: { type: Type.NUMBER },
+              design: { type: Type.NUMBER },
+              content: { type: Type.NUMBER },
+              ux: { type: Type.NUMBER },
+            },
+            required: ["overall", "design", "content", "ux"],
+          },
+          heatmap: {
+            type: Type.ARRAY,
+            items: {
+              type: Type.OBJECT,
+              properties: {
+                x: { type: Type.NUMBER },
+                y: { type: Type.NUMBER },
+                intensity: { type: Type.NUMBER },
+              },
+              required: ["x", "y", "intensity"],
+            },
+          },
+          behavioral: {
+            type: Type.ARRAY,
+            description: "Lista completa dei 20 principi comportamentali analizzati",
+            items: {
+              type: Type.OBJECT,
+              properties: {
+                name: { type: Type.STRING },
+                status: { type: Type.STRING, enum: ["applicato", "mancante", "parziale"] },
+                observation: { type: Type.STRING, description: "Valutazione attuale" },
+                improvement: { type: Type.STRING, description: "Come potrebbe essere implementato meglio" },
+              },
+              required: ["name", "status", "observation", "improvement"],
+            },
+          },
+          nlp: {
+            type: Type.OBJECT,
+            properties: {
+              tone: { type: Type.STRING },
+              readingLevel: { type: Type.STRING },
+              emotionalTriggers: { type: Type.ARRAY, items: { type: Type.STRING } },
+              clarityScore: { type: Type.NUMBER },
+              principles: {
+                type: Type.ARRAY,
+                description: "Lista completa dei principi NLP analizzati",
+                items: {
+                  type: Type.OBJECT,
+                  properties: {
+                    name: { type: Type.STRING },
+                    status: { type: Type.STRING, enum: ["applicato", "mancante", "parziale"] },
+                    observation: { type: Type.STRING },
+                    improvement: { type: Type.STRING },
+                  },
+                  required: ["name", "status", "observation", "improvement"],
+                },
+              }
+            },
+            required: ["tone", "readingLevel", "emotionalTriggers", "clarityScore", "principles"],
+          },
+          conversionReport: {
+            type: Type.OBJECT,
+            properties: {
+              strengths: { type: Type.ARRAY, items: { type: Type.STRING } },
+              weaknesses: { type: Type.ARRAY, items: { type: Type.STRING } },
+              suggestions: {
+                type: Type.ARRAY,
+                items: {
+                  type: Type.OBJECT,
+                  properties: {
+                    title: { type: Type.STRING },
+                    analysis: { type: Type.STRING },
+                    reasoning: { type: Type.STRING },
+                  },
+                  required: ["title", "analysis", "reasoning"],
+                },
+              },
+              conclusion: { type: Type.STRING },
+            },
+            required: ["strengths", "weaknesses", "suggestions", "conclusion"],
+          },
+        },
+        required: ["scores", "heatmap", "behavioral", "nlp", "conversionReport"],
+      };
+
+      const analyzeImage = async (base64Image) => {
+        // Usa la chiave hardcodata o cerca di prenderla da window (se implementassi un input)
+        const apiKey = window.process.env.API_KEY || ''; 
         
-        <!-- Welcome Screen -->
-        <div x-show="!isReady" class="text-center py-20">
-            <h2 class="text-6xl font-black text-white italic mb-10 uppercase tracking-tighter leading-none">Diagnosi<br><span class="text-purple-500 italic">Multi-Livello.</span></h2>
-            <div class="max-w-xl mx-auto glass-card p-12 border-dashed border-2 border-white/10 hover:border-purple-500/40 transition-all cursor-pointer relative shadow-2xl">
-                <input type="file" class="absolute inset-0 opacity-0 cursor-pointer" @change="startAnalysis">
-                <div x-show="!isAnalyzing">
-                    <i data-lucide="cloud-upload" class="w-16 h-16 mx-auto text-purple-500 mb-6"></i>
-                    <p class="text-xl font-bold text-white uppercase italic">Carica lo Screenshot della Landing</p>
-                    <p class="text-slate-500 text-xs mt-4 uppercase tracking-widest font-black">Analisi 5/7 Unificata</p>
-                </div>
-                <div x-show="isAnalyzing" class="space-y-4">
-                    <div class="w-12 h-12 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
-                    <p class="text-purple-400 text-xs font-black uppercase tracking-widest" x-text="statusMsg"></p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Dashboard Layout -->
-        <div x-show="isReady" x-cloak class="space-y-16">
-            
-            <!-- Top Section: Overview & Trust -->
-            <div class="grid lg:grid-cols-12 gap-8">
-                <!-- Visual Analysis (Left) -->
-                <div class="lg:col-span-4 space-y-6">
-                    <div class="glass-card overflow-hidden aspect-[9/16] relative bg-slate-950 border-white/10">
-                        <img :src="imgUrl" class="w-full h-full object-cover opacity-40">
-                        <div class="absolute inset-0 bg-radial-gradient from-red-500/20 to-transparent mix-blend-overlay"></div>
-                        <div class="absolute bottom-6 left-6 right-6 p-5 bg-black/80 backdrop-blur-md rounded-2xl border border-white/10">
-                            <span class="status-pill mb-2 inline-block">Eyetracking Active</span>
-                            <p class="text-sm font-bold text-white italic">"Fissazione oculare dispersa: l'utente ignora l'H1 per concentrarsi su elementi decorativi."</p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Strategic Summary (Right) -->
-                <div class="lg:col-span-8 space-y-8">
-                    <!-- Local Trust Card -->
-                    <div class="glass-card p-8 border-emerald-500/10">
-                        <div class="flex items-center justify-between mb-8">
-                            <div class="flex items-center gap-3">
-                                <i data-lucide="navigation" class="text-emerald-400 w-5 h-5"></i>
-                                <h3 class="text-white font-black uppercase italic tracking-wider">Bergamo Local Trust</h3>
-                            </div>
-                            <div class="text-right">
-                                <span class="text-emerald-400 text-2xl font-black italic">82/100</span>
-                            </div>
-                        </div>
-                        <div class="grid md:grid-cols-2 gap-6">
-                            <div class="p-5 bg-white/5 rounded-2xl border border-white/5">
-                                <p class="text-[10px] font-black text-slate-500 uppercase mb-2">Dialetto Visuale</p>
-                                <p class="text-sm italic font-medium leading-relaxed">"Evita stock photos. Usa scatti reali di Bergamo per aumentare la conversione del 15%."</p>
-                            </div>
-                            <div class="p-5 bg-white/5 rounded-2xl border border-white/5">
-                                <p class="text-[10px] font-black text-slate-500 uppercase mb-2">Geo-Proofing</p>
-                                <p class="text-sm italic font-medium leading-relaxed">"Menziona la vicinanza (es. Seriate, Dalmine) per abbassare le difese d'acquisto."</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Performance & Score Row -->
-                    <div class="grid md:grid-cols-2 gap-8">
-                        <div class="glass-card p-8 flex flex-col justify-center items-center score-gradient shadow-2xl shadow-indigo-500/20">
-                            <p class="text-white/80 text-[10px] font-black uppercase tracking-[0.3em] mb-4">Global Readiness Score</p>
-                            <div class="flex items-baseline gap-1">
-                                <span class="text-8xl font-black text-white italic tracking-tighter">48</span>
-                                <span class="text-2xl font-bold text-white/50">/100</span>
-                            </div>
-                            <div class="mt-6 px-6 py-2 bg-black/20 rounded-full text-[10px] font-black text-white uppercase">
-                                +42% Margine di Crescita
-                            </div>
-                        </div>
-                        
-                        <div class="glass-card p-8 space-y-6">
-                            <div class="flex items-center justify-between">
-                                <div class="flex items-center gap-3">
-                                    <i data-lucide="cpu" class="text-blue-400 w-5 h-5"></i>
-                                    <h3 class="text-white font-black uppercase italic tracking-wider">Elementor Lab</h3>
-                                </div>
-                                <span class="text-blue-400 font-black italic">65/100</span>
-                            </div>
-                            <div class="space-y-4">
-                                <div class="flex justify-between items-start border-b border-white/5 pb-3">
-                                    <span class="text-xs font-bold text-slate-300">DOM Depth (Nesting)</span>
-                                    <span class="text-[10px] text-rose-400 font-black uppercase tracking-widest">35%</span>
-                                </div>
-                                <div class="flex justify-between items-start border-b border-white/5 pb-3">
-                                    <span class="text-xs font-bold text-slate-300">Asset Bloat</span>
-                                    <span class="text-[10px] text-amber-400 font-black uppercase tracking-widest">55%</span>
-                                </div>
-                                <p class="text-[10px] text-slate-500 italic mt-2">Usa Elementor Grid per ridurre il peso del codice.</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Consolidated Audit Sections -->
-            <div class="space-y-16">
-                <template x-for="section in auditData" :key="section.id">
-                    <div x-show="activeTab === 'all' || activeTab === section.category" class="space-y-8 animate-in fade-in duration-500">
-                        
-                        <!-- Section Header with Individual Score -->
-                        <div class="flex items-center justify-between px-4">
-                            <h3 class="text-3xl font-black text-white italic uppercase tracking-tighter flex items-center gap-4">
-                                <span class="w-12 h-[3px] bg-purple-500"></span>
-                                <span x-text="section.title"></span>
-                            </h3>
-                            <div class="flex items-center gap-4 bg-white/5 px-6 py-3 rounded-2xl border border-white/10">
-                                <span class="text-[10px] font-black uppercase text-slate-500 tracking-widest">Section Score</span>
-                                <span class="text-2xl font-black italic" :class="section.score > 70 ? 'text-emerald-400' : 'text-amber-500'" x-text="section.score + '%'"></span>
-                            </div>
-                        </div>
-                        
-                        <div class="grid gap-8">
-                            <template x-for="item in section.items" :key="item.label">
-                                <div class="glass-card p-10 group hover:border-purple-500/30 transition-all">
-                                    <div class="grid md:grid-cols-2 gap-12 items-start">
-                                        <!-- Problema -->
-                                        <div class="space-y-6 problem-glow pl-8 relative">
-                                            <div class="flex items-center justify-between">
-                                                <div class="flex items-center gap-2 text-rose-500">
-                                                    <i data-lucide="alert-circle" class="w-5 h-5"></i>
-                                                    <span class="text-[10px] font-black uppercase tracking-widest">Criticality: <span x-text="item.criticality"></span></span>
-                                                </div>
-                                            </div>
-                                            <h4 class="text-2xl font-black text-white italic uppercase leading-none tracking-tight" x-text="item.label"></h4>
-                                            <p class="text-slate-400 text-lg leading-relaxed italic" x-text="item.problem"></p>
-                                        </div>
-                                        
-                                        <!-- Soluzione -->
-                                        <div class="p-8 rounded-[32px] solution-glow space-y-6 border border-emerald-500/10">
-                                            <div class="flex items-center justify-between">
-                                                <div class="flex items-center gap-2 text-emerald-400">
-                                                    <i data-lucide="zap" class="w-5 h-5"></i>
-                                                    <span class="text-[10px] font-black uppercase tracking-widest">Strategy</span>
-                                                </div>
-                                                <span class="text-[10px] font-black text-emerald-500 uppercase px-3 py-1 bg-emerald-500/10 rounded-full">ROI: +<span x-text="item.roi"></span>%</span>
-                                            </div>
-                                            <p class="text-white text-xl font-bold italic leading-snug" x-text="item.solution"></p>
-                                            <div class="flex items-center gap-4 pt-2">
-                                                <div class="flex -space-x-2">
-                                                    <div class="w-8 h-8 rounded-full bg-slate-800 border-2 border-indigo-500 flex items-center justify-center text-[10px] font-bold">W</div>
-                                                    <div class="w-8 h-8 rounded-full bg-slate-800 border-2 border-emerald-500 flex items-center justify-center text-[10px] font-bold">E</div>
-                                                </div>
-                                                <span class="text-[10px] uppercase font-black text-slate-500">Compatibile WordPress + Elementor</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </template>
-                        </div>
-                    </div>
-                </template>
-            </div>
-
-        </div>
-    </main>
-
-    <script>
-        function theArchitect() {
-            return {
-                isReady: false,
-                isAnalyzing: false,
-                statusMsg: '',
-                activeTab: 'all',
-                imgUrl: null,
-                auditData: [
-                    {
-                        id: 1,
-                        category: 'behavioural',
-                        title: 'Behavioural Logic',
-                        score: 42,
-                        items: [
-                            {
-                                label: 'Inversione Effetto Primacy',
-                                problem: "L'utente memorizza il portfolio ma dimentica la soluzione offerta perché l'H1 è graficamente meno impattante delle immagini.",
-                                solution: "Ingrandisci l'H1 del 30% e usa un colore a contrasto. Inserisci la 'Main Promise' nei primi 3 secondi di scansione oculare.",
-                                criticality: 'High',
-                                roi: '25'
-                            },
-                            {
-                                label: 'Assenza di Loss Aversion',
-                                problem: "La pagina non comunica cosa perde il cliente non agendo ora. Il cervello rettile non percepisce urgenza biologica.",
-                                solution: "Aggiungi un micro-copy sotto la CTA: 'Solo 2 slot disponibili per progetti SEO questo mese a Bergamo'.",
-                                criticality: 'Medium',
-                                roi: '12'
-                            }
-                        ]
-                    },
-                    {
-                        id: 2,
-                        category: 'nlp',
-                        title: 'Neurolinguistic Audit',
-                        score: 58,
-                        items: [
-                            {
-                                label: 'Nominalizzazioni Vuote',
-                                problem: "Usi parole astratte come 'Qualità' e 'Soluzioni'. Queste non attivano i neuroni specchio del cliente.",
-                                solution: "Trasforma i sostantivi in verbi: 'Portiamo il tuo sito in prima pagina' invece di 'Ottimizzazione del posizionamento'.",
-                                criticality: 'High',
-                                roi: '18'
-                            }
-                        ]
-                    },
-                    {
-                        id: 3,
-                        category: 'elementor',
-                        title: 'Elementor Performance Lab',
-                        score: 65,
-                        items: [
-                            {
-                                label: 'DOM Nesting Bloat',
-                                problem: "Eccessiva profondità dei container Elementor. Rallenta il rendering mobile e peggiora i Core Web Vitals.",
-                                solution: "Converti le sezioni in Elementor Grid (CSS Grid). Riduci i wrapper nidificati da 7 a 2 livelli.",
-                                criticality: 'Critical',
-                                roi: '30'
-                            }
-                        ]
-                    }
-                ],
-                init() {
-                    lucide.createIcons();
-                },
-                async startAnalysis(e) {
-                    const file = e.target.files[0];
-                    if(!file) return;
-                    this.imgUrl = URL.createObjectURL(file);
-                    this.isAnalyzing = true;
-                    
-                    const steps = ['Scansione Retina...', 'Analisi NLP...', 'Check Performance Elementor...', 'Sincronizzazione Punteggi...'];
-                    for(let step of steps) {
-                        this.statusMsg = step;
-                        await new Promise(r => setTimeout(r, 800));
-                    }
-                    
-                    this.isAnalyzing = false;
-                    this.isReady = true;
-                    this.$nextTick(() => lucide.createIcons());
-                },
-                reset() {
-                    this.isReady = false;
-                    this.imgUrl = null;
-                }
-            }
+        if (!apiKey) {
+          throw new Error("API Key mancante. Apri il file index.html e inserisci la tua chiave nella variabile 'HARDCODED_API_KEY'.");
         }
+
+        const ai = new GoogleGenAI({ apiKey });
+
+        try {
+          const response = await ai.models.generateContent({
+            model: "gemini-3-flash-preview",
+            contents: {
+              parts: [
+                { inlineData: { mimeType: "image/png", data: base64Image } },
+                { text: "Analizza questa pagina web. Genera un report dettagliato con raccomandazioni strutturate." },
+              ],
+            },
+            config: {
+              systemInstruction: SYSTEM_INSTRUCTION,
+              responseMimeType: "application/json",
+              responseSchema: RESPONSE_SCHEMA,
+              temperature: 0.5, 
+            },
+          });
+
+          if (response.text) {
+            return JSON.parse(response.text);
+          } else {
+            throw new Error("Nessun testo di risposta generato.");
+          }
+        } catch (error) {
+          console.error("Gemini Analysis Error:", error);
+          throw error;
+        }
+      };
+
+      // --- COMPONENTS ---
+
+      const HeatmapOverlay = ({ imageSrc, points }) => {
+        return (
+          <div className="relative w-full overflow-hidden rounded-lg shadow-2xl group border border-slate-700 bg-slate-900">
+            <img
+              src={imageSrc}
+              alt="Analyzed Content"
+              className="w-full h-auto block object-contain"
+            />
+            <div className="absolute inset-0 mix-blend-screen pointer-events-none">
+              {points.map((point, index) => (
+                <div
+                  key={index}
+                  className="absolute rounded-full blur-xl"
+                  style={{
+                    left: `${point.x}%`,
+                    top: `${point.y}%`,
+                    width: `${100 * point.intensity}px`,
+                    height: `${100 * point.intensity}px`,
+                    transform: 'translate(-50%, -50%)',
+                    background: `radial-gradient(circle, rgba(255, 0, 0, 0.8) 0%, rgba(255, 165, 0, 0.5) 40%, rgba(0, 0, 255, 0) 70%)`,
+                    opacity: point.intensity * 0.8,
+                  }}
+                />
+              ))}
+            </div>
+            <div className="absolute bottom-2 right-2 bg-black/70 px-2 py-1 rounded text-xs text-white backdrop-blur-sm z-10">
+              Eye Tracking Simulato
+            </div>
+          </div>
+        );
+      };
+
+      const ScoreCard = ({ title, score, color = "text-blue-500", description }) => {
+        const radius = 36;
+        const circumference = 2 * Math.PI * radius;
+        const offset = circumference - (score / 100) * circumference;
+
+        let strokeColor = "stroke-red-500";
+        if (score >= 50) strokeColor = "stroke-yellow-500";
+        if (score >= 80) strokeColor = "stroke-emerald-500";
+
+        return (
+          <div className="glass-panel p-6 rounded-xl flex flex-col items-center justify-center text-center relative overflow-hidden group hover:bg-slate-800/80 transition-all duration-300">
+            <div className="relative w-32 h-32 mb-4">
+              <svg className="w-full h-full transform -rotate-90">
+                <circle cx="64" cy="64" r={radius} className="stroke-slate-700" strokeWidth="8" fill="none" />
+                <circle cx="64" cy="64" r={radius} className={`transition-all duration-1000 ease-out ${strokeColor}`} strokeWidth="8" strokeDasharray={circumference} strokeDashoffset={offset} strokeLinecap="round" fill="none" />
+              </svg>
+              <div className="absolute inset-0 flex items-center justify-center flex-col">
+                <span className="text-3xl font-bold text-white">{score}</span>
+                <span className="text-xs text-slate-400">/ 100</span>
+              </div>
+            </div>
+            <h3 className="text-lg font-semibold text-slate-200">{title}</h3>
+            {description && <p className="text-xs text-slate-500 mt-2">{description}</p>}
+          </div>
+        );
+      };
+
+      const PrincipleCard = ({ item }) => (
+        <div className="bg-slate-800/40 border border-slate-700/60 rounded-xl p-5 hover:border-indigo-500/30 transition-colors">
+          <div className="flex justify-between items-start mb-4">
+            <h4 className="text-lg font-bold text-white">{item.name}</h4>
+            <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${item.status === 'applicato' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : item.status === 'mancante' ? 'bg-slate-700 text-slate-400 border border-slate-600' : 'bg-amber-500/20 text-amber-400 border border-amber-500/30'}`}>
+              {item.status}
+            </span>
+          </div>
+          <div className="space-y-4">
+            <div>
+              <p className="text-xs text-slate-500 uppercase font-semibold mb-1">Valutazione Attuale</p>
+              <p className="text-slate-300 text-sm leading-relaxed">{item.observation}</p>
+            </div>
+            {item.status !== 'applicato' && (
+              <div className="pt-3 border-t border-white/5">
+                <p className="text-xs text-indigo-400 uppercase font-semibold mb-1">Come potrebbe essere</p>
+                <p className="text-slate-200 text-sm leading-relaxed">{item.improvement}</p>
+              </div>
+            )}
+          </div>
+        </div>
+      );
+
+      const ReportSection = ({ data }) => {
+        return (
+          <div className="space-y-20">
+            {/* Riepilogo Esecutivo */}
+            <section>
+              <div className="flex items-center gap-3 mb-8 border-b border-white/10 pb-4">
+                 <div className="bg-blue-500/20 p-2 rounded-lg"><Activity className="w-6 h-6 text-blue-400" /></div>
+                 <h2 className="text-3xl font-bold text-white">Riepilogo Esecutivo</h2>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div className="glass-panel p-8 rounded-2xl border-l-4 border-emerald-500">
+                  <div className="flex items-center gap-3 mb-6"><CheckCircle2 className="w-8 h-8 text-emerald-500" /><h3 className="text-2xl font-semibold text-white">Punti di Forza</h3></div>
+                  <ul className="space-y-4">
+                    {data.conversionReport.strengths.map((item, i) => (
+                      <li key={i} className="text-slate-200 text-lg flex items-start gap-3 leading-relaxed"><span className="w-2 h-2 bg-emerald-500 rounded-full mt-2.5 shrink-0" />{item}</li>
+                    ))}
+                  </ul>
+                </div>
+                <div className="glass-panel p-8 rounded-2xl border-l-4 border-amber-500">
+                  <div className="flex items-center gap-3 mb-6"><AlertTriangle className="w-8 h-8 text-amber-500" /><h3 className="text-2xl font-semibold text-white">Criticità Rilevate</h3></div>
+                  <ul className="space-y-4">
+                    {data.conversionReport.weaknesses.map((item, i) => (
+                      <li key={i} className="text-slate-200 text-lg flex items-start gap-3 leading-relaxed"><span className="w-2 h-2 bg-amber-500 rounded-full mt-2.5 shrink-0" />{item}</li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            </section>
+
+            {/* Raccomandazioni */}
+            <section>
+              <div className="glass-panel p-8 md:p-10 rounded-3xl bg-gradient-to-br from-indigo-900/20 to-slate-900/40 border border-indigo-500/20">
+                <div className="flex items-center gap-4 mb-10">
+                  <div className="bg-yellow-500/20 p-3 rounded-xl border border-yellow-500/30"><Lightbulb className="w-8 h-8 text-yellow-400" /></div>
+                  <div><h2 className="text-3xl font-bold text-white">Raccomandazioni Strategiche</h2><p className="text-slate-400 text-lg">Azioni concrete per massimizzare la conversione</p></div>
+                </div>
+                <div className="space-y-8">
+                   {data.conversionReport.suggestions.map((suggestion, i) => (
+                     <div key={i} className="flex flex-col md:flex-row gap-6 bg-slate-800/40 p-6 rounded-2xl border border-slate-700/50 hover:bg-slate-800/60 transition-colors">
+                       <div className="flex-shrink-0"><div className="w-12 h-12 rounded-full bg-indigo-600 flex items-center justify-center font-bold text-white text-xl shadow-lg shadow-indigo-500/20 border border-indigo-400/30">{i + 1}</div></div>
+                       <div className="flex-grow space-y-4">
+                         <h3 className="text-xl md:text-2xl font-bold text-white leading-tight">{suggestion.title}</h3>
+                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+                           <div className="bg-slate-900/30 p-4 rounded-xl border-l-2 border-slate-600">
+                              <div className="flex items-center gap-2 mb-2 text-slate-400 uppercase text-xs font-bold tracking-wider"><Search className="w-3 h-3" /> Analisi (Stato Attuale)</div>
+                              <p className="text-slate-300 text-base leading-relaxed">{suggestion.analysis}</p>
+                           </div>
+                           <div className="bg-indigo-900/10 p-4 rounded-xl border-l-2 border-indigo-500">
+                              <div className="flex items-center gap-2 mb-2 text-indigo-400 uppercase text-xs font-bold tracking-wider"><ArrowRightCircle className="w-3 h-3" /> Ragionamento (Perché Cambiare)</div>
+                              <p className="text-slate-200 text-base leading-relaxed font-medium">{suggestion.reasoning}</p>
+                           </div>
+                         </div>
+                       </div>
+                     </div>
+                   ))}
+                </div>
+                <div className="mt-12 pt-8 border-t border-white/5">
+                  <h4 className="text-sm font-bold text-indigo-400 mb-3 uppercase tracking-widest">Conclusione dell'Analisi</h4>
+                  <p className="text-xl text-slate-200 font-medium italic leading-relaxed opacity-90">"{data.conversionReport.conclusion}"</p>
+                </div>
+              </div>
+            </section>
+
+            {/* Behavioral */}
+            <section>
+              <div className="flex items-center gap-3 mb-8 border-b border-white/10 pb-4">
+                 <div className="bg-purple-500/20 p-2 rounded-lg"><Brain className="w-6 h-6 text-purple-400" /></div>
+                 <div><h2 className="text-3xl font-bold text-white">Scienza Comportamentale</h2><p className="text-slate-400">Principi psicologici applicati al marketing</p></div>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                {data.behavioral.map((item, i) => (<PrincipleCard key={i} item={item} />))}
+              </div>
+            </section>
+
+            {/* NLP */}
+            <section>
+              <div className="flex items-center gap-3 mb-8 border-b border-white/10 pb-4">
+                 <div className="bg-pink-500/20 p-2 rounded-lg"><MessageSquareQuote className="w-6 h-6 text-pink-400" /></div>
+                 <div><h2 className="text-3xl font-bold text-white">NLP & Copywriting</h2><p className="text-slate-400">Elaborazione Neuro-Linguistica e Tono di Voce</p></div>
+              </div>
+              <div className="glass-panel p-8 rounded-2xl space-y-8">
+                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 pb-8 border-b border-white/5">
+                    <div className="text-center sm:text-left"><div className="text-xs text-slate-500 uppercase tracking-widest font-bold mb-1">Tono di Voce</div><div className="text-2xl font-bold text-white capitalize">{data.nlp.tone}</div></div>
+                    <div className="text-center sm:text-left"><div className="text-xs text-slate-500 uppercase tracking-widest font-bold mb-1">Livello Lettura</div><div className="text-2xl font-bold text-white">{data.nlp.readingLevel}</div></div>
+                    <div className="text-center sm:text-left"><div className="text-xs text-slate-500 uppercase tracking-widest font-bold mb-1">Chiarezza</div><div className="text-2xl font-bold text-white">{data.nlp.clarityScore}<span className="text-lg text-slate-500">/10</span></div></div>
+                 </div>
+                 <div className="pb-8 border-b border-white/5">
+                    <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2"><Zap className="w-5 h-5 text-yellow-400" />Trigger Emotivi Identificati</h3>
+                    <div className="flex flex-wrap gap-3">
+                      {data.nlp.emotionalTriggers && data.nlp.emotionalTriggers.length > 0 ? (
+                        data.nlp.emotionalTriggers.map((trigger, i) => (<span key={i} className="px-4 py-2 rounded-lg bg-pink-500/10 border border-pink-500/30 text-pink-300 font-medium">{trigger}</span>))
+                      ) : (<span className="text-slate-500 italic">Nessun trigger forte rilevato</span>)}
+                    </div>
+                 </div>
+                 <div>
+                   <h3 className="text-lg font-bold text-white mb-6">Analisi Principi NLP</h3>
+                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                     {data.nlp.principles && data.nlp.principles.map((item, i) => (<PrincipleCard key={i} item={item} />))}
+                   </div>
+                 </div>
+              </div>
+            </section>
+          </div>
+        );
+      };
+
+      // --- APP COMPONENT ---
+
+      const App = () => {
+        const [status, setStatus] = useState(AnalysisStatus.IDLE);
+        const [imagePreview, setImagePreview] = useState(null);
+        const [result, setResult] = useState(null);
+        const [errorMsg, setErrorMsg] = useState("");
+
+        const handleFileChange = useCallback(async (event) => {
+          const file = event.target.files?.[0];
+          if (!file) return;
+
+          if (!file.type.startsWith('image/')) {
+            setErrorMsg("Si prega di caricare un file immagine valido (PNG, JPG).");
+            return;
+          }
+
+          const reader = new FileReader();
+          reader.onloadend = () => {
+            const base64String = reader.result;
+            setImagePreview(base64String);
+            setStatus(AnalysisStatus.IDLE);
+            setResult(null);
+            setErrorMsg("");
+          };
+          reader.readAsDataURL(file);
+        }, []);
+
+        const handleAnalyze = async () => {
+          if (!imagePreview) return;
+          const base64Data = imagePreview.split(',')[1];
+          setStatus(AnalysisStatus.ANALYZING);
+          try {
+            const data = await analyzeImage(base64Data);
+            setResult(data);
+            setStatus(AnalysisStatus.COMPLETE);
+          } catch (err) {
+            setErrorMsg(err.message || "Si è verificato un errore imprevisto.");
+            setStatus(AnalysisStatus.ERROR);
+          }
+        };
+
+        return (
+          <div className="min-h-screen pb-20">
+            <header className="border-b border-white/10 bg-[#0f172a]/80 backdrop-blur-md sticky top-0 z-50">
+              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="bg-indigo-600 p-2 rounded-lg"><ScanEye className="w-6 h-6 text-white" /></div>
+                  <h1 className="text-xl font-bold bg-gradient-to-r from-indigo-400 to-cyan-400 bg-clip-text text-transparent">CreativeScore AI</h1>
+                </div>
+                <div className="hidden sm:flex items-center gap-4 text-sm text-slate-400"><span>v1.0.0 Standalone</span></div>
+              </div>
+            </header>
+
+            <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-10">
+              <div className="flex flex-col items-center justify-center text-center mb-12">
+                 <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">Ottimizza la Conversione con <br /><span className="text-indigo-400">Analisi AI Predittiva</span></h2>
+                 <p className="text-slate-400 max-w-2xl text-lg mb-8 leading-relaxed">Carica uno screenshot della tua landing page.</p>
+
+                 <div className="w-full max-w-xl">
+                   <label className={`flex flex-col items-center justify-center w-full rounded-2xl cursor-pointer transition-all duration-300 ${imagePreview ? 'border-2 border-indigo-500 bg-indigo-900/20 p-4' : 'h-64 border-2 border-dashed border-slate-700 hover:border-indigo-400 hover:bg-slate-800'}`}>
+                      <div className="flex flex-col items-center justify-center">
+                          {imagePreview ? (
+                            <div className="relative w-full flex flex-col items-center">
+                              <img src={imagePreview} className="max-h-[400px] w-auto object-contain rounded-lg shadow-2xl mb-4" alt="Preview" />
+                              <div className="flex items-center gap-2 text-indigo-300 bg-indigo-950/50 px-4 py-2 rounded-full border border-indigo-500/30">
+                                 <Upload className="w-4 h-4" /><span className="text-sm font-semibold">Clicca per cambiare immagine</span>
+                              </div>
+                            </div>
+                          ) : (
+                            <>
+                              <Upload className="w-12 h-12 mb-4 text-slate-400" />
+                              <p className="mb-2 text-lg text-slate-300 font-medium">Clicca per caricare lo screenshot</p>
+                              <p className="text-sm text-slate-500">PNG, JPG (Max 5MB)</p>
+                            </>
+                          )}
+                      </div>
+                      <input type="file" className="hidden" onChange={handleFileChange} accept="image/*" />
+                   </label>
+
+                   {errorMsg && (
+                     <div className="mt-4 p-3 bg-red-900/20 border border-red-500/50 rounded-lg flex items-center gap-2 text-red-300 text-sm"><AlertCircle className="w-4 h-4" />{errorMsg}</div>
+                   )}
+
+                   {imagePreview && status !== AnalysisStatus.ANALYZING && status !== AnalysisStatus.COMPLETE && (
+                     <button onClick={handleAnalyze} className="mt-6 w-full py-4 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-semibold shadow-lg shadow-indigo-500/20 transition-all flex items-center justify-center gap-2 text-lg">
+                       <Sparkles className="w-5 h-5" />Analizza Potenziale di Conversione
+                     </button>
+                   )}
+
+                   {status === AnalysisStatus.ANALYZING && (
+                      <div className="mt-6 w-full py-4 bg-slate-800 text-slate-300 rounded-xl flex items-center justify-center gap-3 cursor-wait"><Loader2 className="w-5 h-5 animate-spin text-indigo-400" />Analisi gerarchia visiva & bias cognitivi...</div>
+                   )}
+                 </div>
+              </div>
+
+              {status === AnalysisStatus.COMPLETE && result && imagePreview && (
+                <div className="animate-fade-in-up space-y-16">
+                  <div className="border-t border-slate-800 pt-12">
+                     <div className="flex items-center gap-3 mb-8">
+                       <h2 className="text-3xl font-bold text-white">Report di Analisi</h2>
+                       <span className="bg-indigo-500/20 text-indigo-300 px-3 py-1 rounded-full text-sm font-medium border border-indigo-500/30">Generato da IA</span>
+                     </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                    <div className="lg:col-span-7 space-y-6">
+                       <div className="flex justify-between items-center border-b border-white/10 pb-4">
+                         <h3 className="text-2xl font-bold text-slate-200 flex items-center gap-3"><ScanEye className="w-6 h-6 text-indigo-400" /> Mappa Attentiva Predittiva (Eyetracking)</h3>
+                       </div>
+                       <HeatmapOverlay imageSrc={imagePreview} points={result.heatmap} />
+                       <p className="text-base text-slate-400 leading-relaxed">Questa mappa di calore predittiva mostra dove è probabile che si concentri l'attenzione dell'utente.</p>
+                    </div>
+
+                    <div className="lg:col-span-5 grid grid-cols-2 gap-4 h-fit">
+                       <div className="col-span-2"><ScoreCard title="Punteggio Creativo Globale" score={result.scores.overall} color="text-indigo-400" description="Metrica combinata di design, contenuto e UX." /></div>
+                       <ScoreCard title="Design" score={result.scores.design} />
+                       <ScoreCard title="Contenuto" score={result.scores.content} />
+                       <ScoreCard title="UX" score={result.scores.ux} />
+                       <div className="col-span-2 glass-panel p-6 rounded-xl mt-4 border border-slate-700">
+                         <h4 className="text-slate-400 text-sm uppercase tracking-wide font-bold mb-3">Riepilogo Esecutivo</h4>
+                         <p className="text-slate-200 text-base leading-relaxed">{result.conversionReport.conclusion.substring(0, 150)}...</p>
+                         <button onClick={() => window.scrollTo({ top: 1500, behavior: 'smooth' })} className="mt-4 text-indigo-400 text-base font-medium flex items-center gap-1 hover:text-indigo-300">Vedi Raccomandazioni Complete <ArrowRight className="w-5 h-5" /></button>
+                       </div>
+                    </div>
+                  </div>
+                  <ReportSection data={result} />
+                </div>
+              )}
+            </main>
+          </div>
+        );
+      };
+
+      const root = createRoot(document.getElementById('root'));
+      root.render(<App />);
     </script>
-    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
 </body>
 </html>
