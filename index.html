@@ -1,0 +1,1064 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CreativeScore AI - Advanced Analysis</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #1e293b;
+            --primary-light: #f8fafc;
+            --accent: #06b6d4;
+            --accent-dark: #0891b2;
+            --teal: #0f766e;
+            --border: #e2e8f0;
+            --muted: #cbd5e1;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            --shadow-lg: 0 12px 24px rgba(0, 0, 0, 0.12);
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f8fafc 0%, #ffffff 50%, rgba(6, 182, 212, 0.03) 100%);
+            color: var(--primary);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        /* Header */
+        header {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 40;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+
+        .header-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 1.5rem 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-weight: bold;
+            font-size: 1.25rem;
+        }
+
+        .logo-icon {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 0.875rem;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--accent-dark);
+            box-shadow: 0 4px 12px rgba(6, 182, 212, 0.3);
+        }
+
+        /* Main Container */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* Hero Scores */
+        .scores-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .score-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+            transition: all 0.3s ease;
+            border: 1px solid var(--border);
+        }
+
+        .score-card:hover {
+            box-shadow: var(--shadow-lg);
+            transform: translateY(-2px);
+        }
+
+        .score-card-header {
+            font-size: 0.875rem;
+            color: #64748b;
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+
+        .score-display {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .score-value {
+            font-size: 3rem;
+            font-weight: bold;
+            color: var(--accent);
+        }
+
+        .score-label {
+            font-size: 0.875rem;
+            color: #64748b;
+            margin-top: 0.5rem;
+        }
+
+        .circular-score {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, rgba(6, 182, 212, 0.1) 0%, rgba(6, 182, 212, 0.05) 100%);
+            border: 4px solid rgba(6, 182, 212, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--accent);
+        }
+
+        /* Tabs */
+        .tabs-container {
+            margin-bottom: 2rem;
+        }
+
+        .tabs-header {
+            display: flex;
+            gap: 0.5rem;
+            background: rgba(226, 232, 240, 0.5);
+            padding: 0.5rem;
+            border-radius: 10px;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            flex: 1;
+            min-width: 120px;
+            padding: 0.75rem 1rem;
+            background: transparent;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            color: #64748b;
+            transition: all 0.3s ease;
+        }
+
+        .tab-btn.active {
+            background: white;
+            color: var(--accent);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Charts */
+        .chart-container {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+            margin-bottom: 1.5rem;
+        }
+
+        .chart-title {
+            font-size: 1.25rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+            color: var(--primary);
+        }
+
+        .chart-description {
+            font-size: 0.875rem;
+            color: #64748b;
+            margin-bottom: 1.5rem;
+        }
+
+        canvas {
+            max-width: 100%;
+            height: auto;
+        }
+
+        /* Metrics Grid */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .metric-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+        }
+
+        .metric-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .metric-name {
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        .metric-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--accent);
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e2e8f0;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 0.75rem;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent) 0%, var(--teal) 100%);
+            transition: width 0.5s ease;
+            border-radius: 4px;
+        }
+
+        /* Assessment Cards */
+        .assessment-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .assessment-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+        }
+
+        .assessment-title {
+            font-size: 1.125rem;
+            font-weight: bold;
+            margin-bottom: 0.75rem;
+            color: var(--primary);
+        }
+
+        .assessment-score {
+            font-size: 0.875rem;
+            color: #64748b;
+            margin-bottom: 1rem;
+        }
+
+        .assessment-list {
+            list-style: none;
+        }
+
+        .assessment-list li {
+            font-size: 0.875rem;
+            color: #475569;
+            margin-bottom: 0.5rem;
+            padding-left: 1.25rem;
+            position: relative;
+        }
+
+        .assessment-list li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: var(--accent);
+            font-weight: bold;
+        }
+
+        .assessment-list.improvements li:before {
+            content: "•";
+            color: #f97316;
+        }
+
+        /* Recommendations */
+        .recommendations {
+            background: linear-gradient(135deg, rgba(226, 232, 240, 0.3) 0%, rgba(6, 182, 212, 0.05) 100%);
+            border-radius: 12px;
+            padding: 2rem;
+            border: 1px solid var(--border);
+        }
+
+        .recommendations-title {
+            font-size: 1.25rem;
+            font-weight: bold;
+            margin-bottom: 1.5rem;
+            color: var(--primary);
+        }
+
+        .recommendations-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .recommendation-item {
+            background: white;
+            border-radius: 10px;
+            padding: 1.25rem;
+            border: 1px solid var(--border);
+        }
+
+        .recommendation-number {
+            font-weight: bold;
+            color: var(--accent);
+            margin-bottom: 0.5rem;
+        }
+
+        .recommendation-title {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--primary);
+        }
+
+        .recommendation-text {
+            font-size: 0.875rem;
+            color: #64748b;
+        }
+
+        /* Pie Chart */
+        .pie-chart-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 2rem 0;
+        }
+
+        .pie-chart {
+            width: 250px;
+            height: 250px;
+        }
+
+        /* Insights */
+        .insights-list {
+            list-style: none;
+        }
+
+        .insights-list li {
+            font-size: 0.875rem;
+            color: #475569;
+            margin-bottom: 0.75rem;
+            padding-left: 1.5rem;
+            position: relative;
+        }
+
+        .insights-list li:before {
+            content: "•";
+            position: absolute;
+            left: 0;
+            color: var(--accent);
+            font-weight: bold;
+            font-size: 1.25rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+
+            .header-container {
+                padding: 1rem;
+            }
+
+            .score-value {
+                font-size: 2rem;
+            }
+
+            .tabs-header {
+                flex-direction: column;
+            }
+
+            .tab-btn {
+                min-width: auto;
+            }
+
+            .scores-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .metrics-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .recommendations-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Footer */
+        footer {
+            border-top: 1px solid var(--border);
+            background: rgba(255, 255, 255, 0.5);
+            padding: 2rem;
+            text-align: center;
+            color: #64748b;
+            font-size: 0.875rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="header-container">
+            <div class="logo">
+                <div class="logo-icon">CS</div>
+                <span>CreativeScore AI</span>
+            </div>
+            <button class="btn btn-primary">Analyze New Page</button>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="container">
+        <!-- Hero Scores -->
+        <div class="scores-grid">
+            <div class="score-card">
+                <div class="score-card-header">Overall Score</div>
+                <div class="score-display">
+                    <div>
+                        <div class="score-value">81</div>
+                        <div class="score-label">Out of 100</div>
+                    </div>
+                    <div class="circular-score">81%</div>
+                </div>
+            </div>
+
+            <div class="score-card">
+                <div class="score-card-header">Conversion Potential</div>
+                <div class="score-display">
+                    <div>
+                        <div class="score-value">78</div>
+                        <div class="score-label">Estimated Uplift %</div>
+                    </div>
+                    <div style="font-size: 3rem;">📈</div>
+                </div>
+            </div>
+
+            <div class="score-card">
+                <div class="score-card-header">Key Insights</div>
+                <ul class="insights-list">
+                    <li>Strong visual hierarchy detected</li>
+                    <li>CTA placement needs optimization</li>
+                    <li>Mobile experience excellent</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="tabs-container">
+            <div class="tabs-header">
+                <button class="tab-btn active" onclick="switchTab('overview')">📊 Overview</button>
+                <button class="tab-btn" onclick="switchTab('behavioral')">🧠 Behavioral</button>
+                <button class="tab-btn" onclick="switchTab('eyetracking')">👁️ Eyetracking</button>
+                <button class="tab-btn" onclick="switchTab('nlp')">📝 NLP</button>
+            </div>
+
+            <!-- Overview Tab -->
+            <div id="overview" class="tab-content active">
+                <div class="chart-container">
+                    <h3 class="chart-title">Conversion Analysis Metrics</h3>
+                    <p class="chart-description">Detailed breakdown of design, content, and user experience scores</p>
+                    <canvas id="conversionChart" width="400" height="200"></canvas>
+                </div>
+
+                <div class="assessment-grid">
+                    <div class="assessment-card">
+                        <div class="assessment-title">Design Score: 8/10</div>
+                        <div class="assessment-score">Visual hierarchy and aesthetics</div>
+                        <div>
+                            <strong style="font-size: 0.875rem;">Strengths</strong>
+                            <ul class="assessment-list">
+                                <li>Modern and attractive design with intuitive navigation</li>
+                                <li>Clear visual hierarchy and color contrast</li>
+                                <li>Consistent branding throughout</li>
+                            </ul>
+                        </div>
+                        <div style="margin-top: 1rem;">
+                            <strong style="font-size: 0.875rem;">Improvements</strong>
+                            <ul class="assessment-list improvements">
+                                <li>Increase whitespace in hero section</li>
+                                <li>Enhance mobile button sizing</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="assessment-card">
+                        <div class="assessment-title">Content Score: 6/10</div>
+                        <div class="assessment-score">Quality and relevance of messaging</div>
+                        <div>
+                            <strong style="font-size: 0.875rem;">Strengths</strong>
+                            <ul class="assessment-list">
+                                <li>Clear value proposition</li>
+                                <li>Good use of social proof</li>
+                            </ul>
+                        </div>
+                        <div style="margin-top: 1rem;">
+                            <strong style="font-size: 0.875rem;">Improvements</strong>
+                            <ul class="assessment-list improvements">
+                                <li>Add more visible CTAs above the fold</li>
+                                <li>Strengthen emotional connection in copy</li>
+                                <li>Include more specific benefits</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="assessment-card">
+                        <div class="assessment-title">User Experience: 7/10</div>
+                        <div class="assessment-score">Navigation and mobile compatibility</div>
+                        <div>
+                            <strong style="font-size: 0.875rem;">Strengths</strong>
+                            <ul class="assessment-list">
+                                <li>Fast loading speed (1.2s)</li>
+                                <li>Responsive mobile design</li>
+                                <li>Intuitive navigation</li>
+                            </ul>
+                        </div>
+                        <div style="margin-top: 1rem;">
+                            <strong style="font-size: 0.875rem;">Improvements</strong>
+                            <ul class="assessment-list improvements">
+                                <li>Optimize Core Web Vitals</li>
+                                <li>Add breadcrumb navigation</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="assessment-card" style="background: linear-gradient(135deg, rgba(6, 182, 212, 0.05) 0%, rgba(6, 182, 212, 0.02) 100%); margin-top: 1.5rem;">
+                    <div class="assessment-title">Conversion Assessment</div>
+                    <p style="font-size: 0.875rem; color: #475569; margin-bottom: 1rem;">
+                        The page features a modern and attractive design with intuitive navigation. However, the content could be improved with more visible CTAs. The user experience is generally positive, but optimization of Core Web Vitals could further enhance performance.
+                    </p>
+                    <p style="font-size: 0.875rem; font-weight: 600; color: var(--accent);">
+                        Overall effectiveness: Moderate - with targeted improvements, conversion rate could increase by 15-20%.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Behavioral Tab -->
+            <div id="behavioral" class="tab-content">
+                <div class="chart-container">
+                    <h3 class="chart-title">Behavioral Science Analysis</h3>
+                    <p class="chart-description">Assessment based on 200+ behavioral indicators</p>
+                    <canvas id="behavioralChart" width="400" height="200"></canvas>
+                </div>
+
+                <div class="metrics-grid">
+                    <div class="metric-card">
+                        <div class="metric-header">
+                            <span class="metric-name">Attention Flow</span>
+                            <span class="metric-value">82%</span>
+                        </div>
+                        <p style="font-size: 0.75rem; color: #64748b; margin-bottom: 0.75rem;">How well the page guides user attention</p>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 82%;"></div>
+                        </div>
+                    </div>
+
+                    <div class="metric-card">
+                        <div class="metric-header">
+                            <span class="metric-name">Cognitive Load</span>
+                            <span class="metric-value">76%</span>
+                        </div>
+                        <p style="font-size: 0.75rem; color: #64748b; margin-bottom: 0.75rem;">Information complexity assessment</p>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 76%;"></div>
+                        </div>
+                    </div>
+
+                    <div class="metric-card">
+                        <div class="metric-header">
+                            <span class="metric-name">Trust Signals</span>
+                            <span class="metric-value">88%</span>
+                        </div>
+                        <p style="font-size: 0.75rem; color: #64748b; margin-bottom: 0.75rem;">Credibility and authority indicators</p>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 88%;"></div>
+                        </div>
+                    </div>
+
+                    <div class="metric-card">
+                        <div class="metric-header">
+                            <span class="metric-name">Urgency</span>
+                            <span class="metric-value">71%</span>
+                        </div>
+                        <p style="font-size: 0.75rem; color: #64748b; margin-bottom: 0.75rem;">Conversion pressure elements</p>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 71%;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Eyetracking Tab -->
+            <div id="eyetracking" class="tab-content">
+                <div class="chart-container">
+                    <h3 class="chart-title">Eye Tracking Heatmap Analysis</h3>
+                    <p class="chart-description">Where users focus their attention on your page</p>
+                    <div class="pie-chart-container">
+                        <canvas id="eyetrackingChart" class="pie-chart"></canvas>
+                    </div>
+                </div>
+
+                <div class="metrics-grid">
+                    <div class="metric-card">
+                        <div class="metric-header">
+                            <span class="metric-name">Header</span>
+                        </div>
+                        <div style="margin-bottom: 0.75rem;">
+                            <div style="font-size: 0.875rem; color: #64748b; margin-bottom: 0.5rem;">Focus Attention: <strong>15%</strong></div>
+                            <div style="font-size: 0.875rem; color: #64748b;">Avg. Time: <strong>2.3s</strong></div>
+                        </div>
+                    </div>
+
+                    <div class="metric-card">
+                        <div class="metric-header">
+                            <span class="metric-name">Hero</span>
+                        </div>
+                        <div style="margin-bottom: 0.75rem;">
+                            <div style="font-size: 0.875rem; color: #64748b; margin-bottom: 0.5rem;">Focus Attention: <strong>28%</strong></div>
+                            <div style="font-size: 0.875rem; color: #64748b;">Avg. Time: <strong>4.1s</strong></div>
+                        </div>
+                    </div>
+
+                    <div class="metric-card">
+                        <div class="metric-header">
+                            <span class="metric-name">CTA</span>
+                        </div>
+                        <div style="margin-bottom: 0.75rem;">
+                            <div style="font-size: 0.875rem; color: #64748b; margin-bottom: 0.5rem;">Focus Attention: <strong>22%</strong></div>
+                            <div style="font-size: 0.875rem; color: #64748b;">Avg. Time: <strong>3.5s</strong></div>
+                        </div>
+                    </div>
+
+                    <div class="metric-card">
+                        <div class="metric-header">
+                            <span class="metric-name">Footer</span>
+                        </div>
+                        <div style="margin-bottom: 0.75rem;">
+                            <div style="font-size: 0.875rem; color: #64748b; margin-bottom: 0.5rem;">Focus Attention: <strong>8%</strong></div>
+                            <div style="font-size: 0.875rem; color: #64748b;">Avg. Time: <strong>1.2s</strong></div>
+                        </div>
+                    </div>
+
+                    <div class="metric-card">
+                        <div class="metric-header">
+                            <span class="metric-name">Sidebar</span>
+                        </div>
+                        <div style="margin-bottom: 0.75rem;">
+                            <div style="font-size: 0.875rem; color: #64748b; margin-bottom: 0.5rem;">Focus Attention: <strong>12%</strong></div>
+                            <div style="font-size: 0.875rem; color: #64748b;">Avg. Time: <strong>1.8s</strong></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- NLP Tab -->
+            <div id="nlp" class="tab-content">
+                <div class="chart-container">
+                    <h3 class="chart-title">Natural Language Processing Analysis</h3>
+                    <p class="chart-description">Content effectiveness and persuasion metrics</p>
+                    <canvas id="nlpChart" width="400" height="200"></canvas>
+                </div>
+
+                <div class="metrics-grid">
+                    <div class="metric-card">
+                        <div class="metric-header">
+                            <span class="metric-name">Persuasion</span>
+                            <span class="metric-value">84%</span>
+                        </div>
+                        <p style="font-size: 0.75rem; color: #64748b; margin-bottom: 0.75rem;">Keywords detected: <strong>12</strong></p>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 84%;"></div>
+                        </div>
+                    </div>
+
+                    <div class="metric-card">
+                        <div class="metric-header">
+                            <span class="metric-name">Clarity</span>
+                            <span class="metric-value">79%</span>
+                        </div>
+                        <p style="font-size: 0.75rem; color: #64748b; margin-bottom: 0.75rem;">Keywords detected: <strong>8</strong></p>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 79%;"></div>
+                        </div>
+                    </div>
+
+                    <div class="metric-card">
+                        <div class="metric-header">
+                            <span class="metric-name">Emotional</span>
+                            <span class="metric-value">86%</span>
+                        </div>
+                        <p style="font-size: 0.75rem; color: #64748b; margin-bottom: 0.75rem;">Keywords detected: <strong>15</strong></p>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 86%;"></div>
+                        </div>
+                    </div>
+
+                    <div class="metric-card">
+                        <div class="metric-header">
+                            <span class="metric-name">Technical</span>
+                            <span class="metric-value">72%</span>
+                        </div>
+                        <p style="font-size: 0.75rem; color: #64748b; margin-bottom: 0.75rem;">Keywords detected: <strong>6</strong></p>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 72%;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recommendations -->
+        <div class="recommendations">
+            <h2 class="recommendations-title">Top Recommendations for Conversion Optimization</h2>
+            <div class="recommendations-grid">
+                <div class="recommendation-item">
+                    <div class="recommendation-number">1. Optimize CTA Placement</div>
+                    <div class="recommendation-title">Move primary CTA above the fold</div>
+                    <div class="recommendation-text">Move primary CTA above the fold and increase button size by 15% to improve click-through rate.</div>
+                </div>
+
+                <div class="recommendation-item">
+                    <div class="recommendation-number">2. Enhance Copy Emotional Appeal</div>
+                    <div class="recommendation-title">Strengthen emotional connection</div>
+                    <div class="recommendation-text">Incorporate more emotional triggers and benefit-driven language to increase engagement by 12%.</div>
+                </div>
+
+                <div class="recommendation-item">
+                    <div class="recommendation-number">3. Improve Mobile Experience</div>
+                    <div class="recommendation-title">Optimize for mobile devices</div>
+                    <div class="recommendation-text">Optimize touch targets and reduce form fields on mobile to decrease bounce rate by 8%.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <p>© 2025 CreativeScore AI. All rights reserved.</p>
+    </footer>
+
+    <script>
+        // Tab Switching
+        function switchTab(tabName) {
+            // Hide all tabs
+            const tabs = document.querySelectorAll('.tab-content');
+            tabs.forEach(tab => tab.classList.remove('active'));
+
+            // Remove active class from all buttons
+            const buttons = document.querySelectorAll('.tab-btn');
+            buttons.forEach(btn => btn.classList.remove('active'));
+
+            // Show selected tab
+            document.getElementById(tabName).classList.add('active');
+
+            // Add active class to clicked button
+            event.target.classList.add('active');
+
+            // Draw charts for the selected tab
+            setTimeout(() => {
+                if (tabName === 'overview') drawConversionChart();
+                else if (tabName === 'behavioral') drawBehavioralChart();
+                else if (tabName === 'eyetracking') drawEyetrackingChart();
+                else if (tabName === 'nlp') drawNLPChart();
+            }, 100);
+        }
+
+        // Canvas Drawing Functions
+        function drawConversionChart() {
+            const canvas = document.getElementById('conversionChart');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const width = canvas.width;
+            const height = canvas.height;
+
+            ctx.clearRect(0, 0, width, height);
+
+            const data = [
+                { label: 'Design', score: 85, benchmark: 75 },
+                { label: 'Content', score: 72, benchmark: 70 },
+                { label: 'UX', score: 88, benchmark: 80 },
+                { label: 'CTA', score: 79, benchmark: 75 }
+            ];
+
+            const barWidth = width / (data.length * 2.5);
+            const maxScore = 100;
+            const chartHeight = height - 60;
+            const chartTop = 20;
+
+            // Draw Y-axis labels
+            ctx.fillStyle = '#64748b';
+            ctx.font = '12px Arial';
+            ctx.textAlign = 'right';
+            for (let i = 0; i <= 100; i += 25) {
+                const y = chartTop + chartHeight - (i / maxScore) * chartHeight;
+                ctx.fillText(i, 35, y + 4);
+            }
+
+            // Draw bars
+            data.forEach((item, index) => {
+                const x = 50 + index * (width / data.length);
+                const scoreHeight = (item.score / maxScore) * chartHeight;
+                const benchmarkHeight = (item.benchmark / maxScore) * chartHeight;
+
+                // Score bar
+                ctx.fillStyle = '#06b6d4';
+                ctx.fillRect(x, chartTop + chartHeight - scoreHeight, barWidth - 5, scoreHeight);
+
+                // Benchmark bar
+                ctx.fillStyle = '#cbd5e1';
+                ctx.fillRect(x + barWidth, chartTop + chartHeight - benchmarkHeight, barWidth - 5, benchmarkHeight);
+
+                // Label
+                ctx.fillStyle = '#1e293b';
+                ctx.font = 'bold 12px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText(item.label, x + barWidth, chartTop + chartHeight + 20);
+            });
+
+            // Legend
+            ctx.fillStyle = '#06b6d4';
+            ctx.fillRect(50, height - 30, 12, 12);
+            ctx.fillStyle = '#1e293b';
+            ctx.font = '12px Arial';
+            ctx.textAlign = 'left';
+            ctx.fillText('Your Score', 70, height - 22);
+
+            ctx.fillStyle = '#cbd5e1';
+            ctx.fillRect(200, height - 30, 12, 12);
+            ctx.fillText('Benchmark', 220, height - 22);
+        }
+
+        function drawBehavioralChart() {
+            const canvas = document.getElementById('behavioralChart');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const width = canvas.width;
+            const height = canvas.height;
+
+            ctx.clearRect(0, 0, width, height);
+
+            const data = [
+                { label: 'Attention Flow', value: 82 },
+                { label: 'Cognitive Load', value: 76 },
+                { label: 'Trust Signals', value: 88 },
+                { label: 'Urgency', value: 71 }
+            ];
+
+            const padding = 50;
+            const chartWidth = width - 2 * padding;
+            const chartHeight = height - 80;
+            const pointSpacing = chartWidth / (data.length - 1);
+
+            // Draw grid
+            ctx.strokeStyle = '#e2e8f0';
+            ctx.lineWidth = 1;
+            for (let i = 0; i <= 100; i += 25) {
+                const y = padding + chartHeight - (i / 100) * chartHeight;
+                ctx.beginPath();
+                ctx.moveTo(padding, y);
+                ctx.lineTo(width - padding, y);
+                ctx.stroke();
+            }
+
+            // Draw line
+            ctx.strokeStyle = '#06b6d4';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            data.forEach((item, index) => {
+                const x = padding + index * pointSpacing;
+                const y = padding + chartHeight - (item.value / 100) * chartHeight;
+                if (index === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            });
+            ctx.stroke();
+
+            // Draw points
+            ctx.fillStyle = '#06b6d4';
+            data.forEach((item, index) => {
+                const x = padding + index * pointSpacing;
+                const y = padding + chartHeight - (item.value / 100) * chartHeight;
+                ctx.beginPath();
+                ctx.arc(x, y, 6, 0, Math.PI * 2);
+                ctx.fill();
+            });
+
+            // Draw labels
+            ctx.fillStyle = '#1e293b';
+            ctx.font = 'bold 12px Arial';
+            ctx.textAlign = 'center';
+            data.forEach((item, index) => {
+                const x = padding + index * pointSpacing;
+                ctx.fillText(item.label, x, height - 20);
+            });
+
+            // Draw Y-axis labels
+            ctx.fillStyle = '#64748b';
+            ctx.font = '12px Arial';
+            ctx.textAlign = 'right';
+            for (let i = 0; i <= 100; i += 25) {
+                const y = padding + chartHeight - (i / 100) * chartHeight;
+                ctx.fillText(i, padding - 10, y + 4);
+            }
+        }
+
+        function drawEyetrackingChart() {
+            const canvas = document.getElementById('eyetrackingChart');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const width = canvas.width;
+            const height = canvas.height;
+
+            ctx.clearRect(0, 0, width, height);
+
+            const data = [
+                { label: 'Header', value: 15, color: '#06b6d4' },
+                { label: 'Hero', value: 28, color: '#0891b2' },
+                { label: 'CTA', value: 22, color: '#0f766e' },
+                { label: 'Footer', value: 8, color: '#164e63' },
+                { label: 'Sidebar', value: 12, color: '#0c4a6e' }
+            ];
+
+            const centerX = width / 2;
+            const centerY = height / 2;
+            const radius = 80;
+
+            let currentAngle = -Math.PI / 2;
+            data.forEach(item => {
+                const sliceAngle = (item.value / 100) * Math.PI * 2;
+
+                // Draw slice
+                ctx.fillStyle = item.color;
+                ctx.beginPath();
+                ctx.moveTo(centerX, centerY);
+                ctx.arc(centerX, centerY, radius, currentAngle, currentAngle + sliceAngle);
+                ctx.closePath();
+                ctx.fill();
+
+                // Draw label
+                const labelAngle = currentAngle + sliceAngle / 2;
+                const labelX = centerX + Math.cos(labelAngle) * (radius + 30);
+                const labelY = centerY + Math.sin(labelAngle) * (radius + 30);
+
+                ctx.fillStyle = '#1e293b';
+                ctx.font = 'bold 12px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText(item.label + ': ' + item.value + '%', labelX, labelY);
+
+                currentAngle += sliceAngle;
+            });
+        }
+
+        function drawNLPChart() {
+            const canvas = document.getElementById('nlpChart');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const width = canvas.width;
+            const height = canvas.height;
+
+            ctx.clearRect(0, 0, width, height);
+
+            const data = [
+                { label: 'Persuasion', value: 84 },
+                { label: 'Clarity', value: 79 },
+                { label: 'Emotional', value: 86 },
+                { label: 'Technical', value: 72 }
+            ];
+
+            const barHeight = 40;
+            const padding = 50;
+            const maxValue = 100;
+
+            data.forEach((item, index) => {
+                const y = padding + index * (barHeight + 20);
+                const barWidth = (item.value / maxValue) * (width - 150);
+
+                // Draw bar
+                ctx.fillStyle = '#06b6d4';
+                ctx.fillRect(100, y, barWidth, barHeight - 10);
+
+                // Draw label
+                ctx.fillStyle = '#1e293b';
+                ctx.font = 'bold 12px Arial';
+                ctx.textAlign = 'right';
+                ctx.fillText(item.label, 90, y + 20);
+
+                // Draw value
+                ctx.fillStyle = '#06b6d4';
+                ctx.font = 'bold 14px Arial';
+                ctx.textAlign = 'left';
+                ctx.fillText(item.value + '%', barWidth + 110, y + 20);
+            });
+        }
+
+        // Initialize charts on page load
+        window.addEventListener('load', () => {
+            drawConversionChart();
+        });
+    </script>
+</body>
+</html>
