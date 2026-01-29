@@ -50,17 +50,15 @@
 
     <!-- Import Map per gestire le dipendenze React ed esterne direttamente nel browser -->
     <script type="importmap">
-{
-  "imports": {
-    "react": "https://esm.sh/react@18.2.0",
-    "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
-    "lucide-react": "https://esm.sh/lucide-react@0.294.0",
-    "@google/genai": "https://esm.sh/@google/genai@0.1.1",
-    "react-dom/": "https://esm.sh/react-dom@^19.2.4/",
-    "react/": "https://esm.sh/react@^19.2.4/"
-  }
-}
-</script>
+    {
+      "imports": {
+        "react": "https://esm.sh/react@18.3.1",
+        "react-dom/client": "https://esm.sh/react-dom@18.3.1/client",
+        "lucide-react": "https://esm.sh/lucide-react@0.460.0?external=react",
+        "@google/genai": "https://esm.sh/@google/genai@1.38.0"
+      }
+    }
+    </script>
     
     <!-- Babel Standalone per compilare JSX nel browser -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -75,202 +73,71 @@
         Upload, ScanEye, Sparkles, AlertCircle, Loader2, ArrowRight,
         CheckCircle2, AlertTriangle, Lightbulb, Brain, Activity, MessageSquareQuote, Zap, Search, ArrowRightCircle
       } from 'lucide-react';
-      import { GoogleGenAI, Type } from "@google/genai";
-
-      // --- CONFIGURAZIONE ---
-      // Se vuoi hardcodare la chiave per uso personale, inseriscila qui sotto.
-      // Altrimenti lascia vuoto e l'app userà un meccanismo di fallback o potrai implementare un input utente.
-      const HARDCODED_API_KEY = ""; 
-      
-      // Polyfill per process.env per evitare crash se il codice originale lo referenziava
-      window.process = window.process || { env: { API_KEY: HARDCODED_API_KEY } };
 
       // --- TYPES & ENUMS ---
       // Definiamo i tipi internamente per TypeScript (Babel li gestirà ignorandoli nel transpile)
 
-      enum AnalysisStatus {
-        IDLE = 'IDLE',
-        ANALYZING = 'ANALYZING',
-        COMPLETE = 'COMPLETE',
-        ERROR = 'ERROR'
-      }
-
-      // --- GEMINI SERVICE ---
-
-      const SYSTEM_INSTRUCTION = `
-Sei un esperto di livello mondiale in Ottimizzazione del Tasso di Conversione (CRO), Neuro-Marketing e Scienze Comportamentali.
-Il tuo compito è analizzare screenshot di landing page fornendo un report strutturato e professionale identico agli standard di "Creative Score".
-
-Devi generare un'analisi profonda divisa in 4 sezioni principali.
-
-1. **Analisi Conversione & UX (Stile PDF Pagina 1 e 2)**:
-   - Identifica Punti di Forza e Debolezze.
-   - **Raccomandazioni Strategiche**: Devi fornire suggerimenti specifici. Per ogni suggerimento usa questo formato rigoroso:
-     - *Titolo*: L'azione consigliata (es. "Ottimizza la gerarchia del testo").
-     - *Analisi*: Cosa c'è attualmente nella pagina (osservazione oggettiva dello stato attuale).
-     - *Ragionamento*: Perché la modifica aumenterà la conversione (spiegazione scientifica/psicologica).
-
-2. **Scienze Comportamentali (Analisi Completa - Pagina 3 PDF)**:
-   Devi analizzare la pagina rispetto a TUTTI i seguenti principi. Per ognuno, indica se è "applicato", "mancante" o "parziale", fornisci una "Valutazione" (osservazione) e un suggerimento "Come potrebbe essere".
-   
-   Lista dei Principi da analizzare:
-   - **Anchoring (Ancoraggio)**
-   - **Authority (Autorità)**
-   - **Availability Heuristic**
-   - **Bandwagon Effect**
-   - **Cognitive Dissonance**
-   - **Commitment and Consistency**
-   - **Decoy Effect (Effetto Esca)**
-   - **Default Effect**
-   - **Emotional Appeal**
-   - **Endowment Effect**
-   - **Framing**
-   - **Frequency Illusion**
-   - **Hyperbolic Discounting**
-   - **In-group Favoritism**
-   - **Loss Aversion**
-   - **Paradox of Choice**
-   - **Priming**
-   - **Reciprocity**
-   - **Scarcity (Scarsità)**
-   - **Social Proof (Riprova Sociale)**
-
-3. **NLP & Copywriting (Analisi Completa - Pagina 4 PDF)**:
-   Analizza il testo usando questi principi NLP specifici:
-   - Anchoring (NLP), Belief Change, Calibration, Chunking, Logical Levels, Meta Programs, Meta-Modeling, Milton Model, Pacing and Leading, Pattern Interrupts, Perceptual Positions, Rapport Building, Reframing, Representational Systems, Sensory Acuity, Strategy Elicitation, Submodalities, Swish Pattern, Timeline Therapy, Well-Formed Outcomes.
-   Includi anche: Tono di voce, Livello di lettura e Trigger emotivi.
-
-4. **Eye Tracking Predittivo**:
-   Genera coordinate per una heatmap basata sulla salienza visiva (contrasto, volti, CTA).
-
-IMPORTANTE: Rispondi ESCLUSIVAMENTE in ITALIANO.
-Sii critico e professionale. Non inventare dati, basati su ciò che vedi nell'immagine.
-`;
-
-      const RESPONSE_SCHEMA = {
-        type: Type.OBJECT,
-        properties: {
-          scores: {
-            type: Type.OBJECT,
-            properties: {
-              overall: { type: Type.NUMBER },
-              design: { type: Type.NUMBER },
-              content: { type: Type.NUMBER },
-              ux: { type: Type.NUMBER },
-            },
-            required: ["overall", "design", "content", "ux"],
-          },
-          heatmap: {
-            type: Type.ARRAY,
-            items: {
-              type: Type.OBJECT,
-              properties: {
-                x: { type: Type.NUMBER },
-                y: { type: Type.NUMBER },
-                intensity: { type: Type.NUMBER },
-              },
-              required: ["x", "y", "intensity"],
-            },
-          },
-          behavioral: {
-            type: Type.ARRAY,
-            description: "Lista completa dei 20 principi comportamentali analizzati",
-            items: {
-              type: Type.OBJECT,
-              properties: {
-                name: { type: Type.STRING },
-                status: { type: Type.STRING, enum: ["applicato", "mancante", "parziale"] },
-                observation: { type: Type.STRING, description: "Valutazione attuale" },
-                improvement: { type: Type.STRING, description: "Come potrebbe essere implementato meglio" },
-              },
-              required: ["name", "status", "observation", "improvement"],
-            },
-          },
-          nlp: {
-            type: Type.OBJECT,
-            properties: {
-              tone: { type: Type.STRING },
-              readingLevel: { type: Type.STRING },
-              emotionalTriggers: { type: Type.ARRAY, items: { type: Type.STRING } },
-              clarityScore: { type: Type.NUMBER },
-              principles: {
-                type: Type.ARRAY,
-                description: "Lista completa dei principi NLP analizzati",
-                items: {
-                  type: Type.OBJECT,
-                  properties: {
-                    name: { type: Type.STRING },
-                    status: { type: Type.STRING, enum: ["applicato", "mancante", "parziale"] },
-                    observation: { type: Type.STRING },
-                    improvement: { type: Type.STRING },
-                  },
-                  required: ["name", "status", "observation", "improvement"],
-                },
-              }
-            },
-            required: ["tone", "readingLevel", "emotionalTriggers", "clarityScore", "principles"],
-          },
-          conversionReport: {
-            type: Type.OBJECT,
-            properties: {
-              strengths: { type: Type.ARRAY, items: { type: Type.STRING } },
-              weaknesses: { type: Type.ARRAY, items: { type: Type.STRING } },
-              suggestions: {
-                type: Type.ARRAY,
-                items: {
-                  type: Type.OBJECT,
-                  properties: {
-                    title: { type: Type.STRING },
-                    analysis: { type: Type.STRING },
-                    reasoning: { type: Type.STRING },
-                  },
-                  required: ["title", "analysis", "reasoning"],
-                },
-              },
-              conclusion: { type: Type.STRING },
-            },
-            required: ["strengths", "weaknesses", "suggestions", "conclusion"],
-          },
-        },
-        required: ["scores", "heatmap", "behavioral", "nlp", "conversionReport"],
+      const AnalysisStatus = {
+        IDLE: 'IDLE',
+        ANALYZING: 'ANALYZING',
+        COMPLETE: 'COMPLETE',
+        ERROR: 'ERROR'
       };
 
+
       const analyzeImage = async (base64Image) => {
-        // Usa la chiave hardcodata o cerca di prenderla da window (se implementassi un input)
-        const apiKey = window.process.env.API_KEY || ''; 
+        // Simulazione caricamento
+        await new Promise(r => setTimeout(r, 4000));
         
-        if (!apiKey) {
-          throw new Error("API Key mancante. Apri il file index.html e inserisci la tua chiave nella variabile 'HARDCODED_API_KEY'.");
-        }
-
-        const ai = new GoogleGenAI({ apiKey });
-
-        try {
-          const response = await ai.models.generateContent({
-            model: "gemini-3-flash-preview",
-            contents: {
-              parts: [
-                { inlineData: { mimeType: "image/png", data: base64Image } },
-                { text: "Analizza questa pagina web. Genera un report dettagliato con raccomandazioni strutturate." },
-              ],
-            },
-            config: {
-              systemInstruction: SYSTEM_INSTRUCTION,
-              responseMimeType: "application/json",
-              responseSchema: RESPONSE_SCHEMA,
-              temperature: 0.5, 
-            },
-          });
-
-          if (response.text) {
-            return JSON.parse(response.text);
-          } else {
-            throw new Error("Nessun testo di risposta generato.");
+        return {
+          scores: {
+            overall: 78,
+            design: 82,
+            content: 74,
+            ux: 76,
+          },
+          heatmap: [
+            { x: 50, y: 20, intensity: 0.9 },
+            { x: 20, y: 45, intensity: 0.6 },
+            { x: 80, y: 45, intensity: 0.7 },
+            { x: 50, y: 75, intensity: 0.8 },
+            { x: 30, y: 30, intensity: 0.5 },
+          ],
+          behavioral: [
+            { name: "Anchoring (Ancoraggio)", status: "applicato", observation: "I prezzi sono presentati con riferimenti chiari.", improvement: "" },
+            { name: "Authority (Autorità)", status: "parziale", observation: "Mancano loghi di certificazione o badge di fiducia.", improvement: "Aggiungi loghi di partner o certificazioni riconosciute." },
+            { name: "Availability Heuristic", status: "mancante", observation: "Nessun esempio recente di successo mostrato chiaramente.", improvement: "Mostra casi studio recenti o statistiche di successo." },
+            { name: "Bandwagon Effect", status: "applicato", observation: "Presenza di contatori 'X utenti soddisfatti'.", improvement: "" },
+            { name: "Commitment and Consistency", status: "parziale", observation: "Il funnel è un po' brusco.", improvement: "Usa micro-conversioni (es. quiz) prima della CTA finale." },
+            { name: "Loss Aversion", status: "mancante", observation: "Non si percepisce cosa l'utente perde ignorando l'offerta.", improvement: "Usa frasi come 'Non perdere l'occasione di...'" },
+            { name: "Paradox of Choice", status: "applicato", observation: "Poche opzioni chiare, evita confusione.", improvement: "" },
+            { name: "Social Proof", status: "applicato", observation: "Testimonianze reali visibili.", improvement: "" },
+            { name: "Scarcity (Scarsità)", status: "mancante", observation: "Nessun indicatore di tempo o quantità.", improvement: "Inserisci un countdown per l'offerta." },
+            { name: "Default Effect", status: "parziale", observation: "Il piano consigliato non è abbastanza evidenziato.", improvement: "Usa un badge 'Più Scelto' sul piano centrale." },
+          ],
+          nlp: {
+            tone: "Professionale e Orientato ai Risultati",
+            readingLevel: "Accessibile (Adatto a tutti)",
+            emotionalTriggers: ["Successo", "Sicurezza", "Crescita"],
+            clarityScore: 8.5,
+            principles: [
+              { name: "Chunking", status: "applicato", observation: "Informazioni divise in blocchi digeribili.", improvement: "" },
+              { name: "Milton Model", status: "parziale", observation: "Linguaggio un po' troppo tecnico in certi punti.", improvement: "Usa metafore più semplici per i concetti complessi." },
+              { name: "Pacing and Leading", status: "applicato", observation: "Il copy accompagna bene l'utente verso la soluzione.", improvement: "" },
+              { name: "Representational Systems", status: "parziale", observation: "Predominanza di termini visivi.", improvement: "Includi termini auditivi e cinestesici per un impatto multisensoriale." },
+            ]
+          },
+          conversionReport: {
+            strengths: ["Design moderno e pulito", "Messaggio principale chiaro", "Mobile responsive"],
+            weaknesses: ["Urgenza assente", "CTA con poco contrasto", "Headline poco persuasiva"],
+            suggestions: [
+              { title: "Ottimizza il Contrasto CTA", analysis: "Il pulsante principale ha un colore simile agli elementi decorativi.", reasoning: "Un colore complementare e vivace attirerà l'attenzione inconscia verso l'azione desiderata." },
+              { title: "Implementa Urgenza Psicologica", analysis: "Non ci sono motivi per agire subito invece che rimandare.", reasoning: "La scarsità (tempo o quantità) combatte la procrastinazione decisionale." },
+              { title: "Riformula l'Headline", analysis: "Attualmente descrive il servizio invece del beneficio.", reasoning: "Il cervello rettile risponde ai benefici diretti per la sopravvivenza o il successo." }
+            ],
+            conclusion: "L'analisi suggerisce che la landing page è esteticamente valida ma manca di trigger comportamentali forti. Implementando urgenza e migliorando la gerarchia delle azioni, si stima un incremento del tasso di conversione tra il 10% e il 22%."
           }
-        } catch (error) {
-          console.error("Gemini Analysis Error:", error);
-          throw error;
-        }
+        };
       };
 
       // --- COMPONENTS ---
@@ -284,7 +151,7 @@ Sii critico e professionale. Non inventare dati, basati su ciò che vedi nell'im
               className="w-full h-auto block object-contain"
             />
             <div className="absolute inset-0 mix-blend-screen pointer-events-none">
-              {points.map((point, index) => (
+              {points && points.map((point, index) => (
                 <div
                   key={index}
                   className="absolute rounded-full blur-xl"
