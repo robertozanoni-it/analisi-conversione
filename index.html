@@ -86,7 +86,8 @@
         "react-dom/client": "https://esm.sh/react-dom@18.3.1/client",
         "lucide-react": "https://esm.sh/lucide-react@0.460.0?external=react",
         "html2canvas": "https://esm.sh/html2canvas@1.4.1",
-        "jspdf": "https://esm.sh/jspdf@2.5.1"
+        "jspdf": "https://esm.sh/jspdf@2.5.1",
+        "@google/genai": "https://esm.sh/@google/genai@1.38.0"
       }
     }
     </script>
@@ -100,6 +101,7 @@
     <script type="text/babel" data-type="module" data-presets="typescript,react">
       import React, { useState, useCallback, useRef } from 'react';
       import { createRoot } from 'react-dom/client';
+      import { GoogleGenAI } from '@google/genai';
       import {
         Upload, ScanEye, Sparkles, AlertCircle, Loader2, ArrowRight,
         CheckCircle2, AlertTriangle, Lightbulb, Brain, Activity, MessageSquareQuote, Zap, Search, ArrowRightCircle,
@@ -109,9 +111,59 @@
       import html2canvas from 'html2canvas';
       import { jsPDF } from 'jspdf';
 
+      // Schema Types for Gemini
+      const SchemaType = {
+        OBJECT: 'object',
+        ARRAY: 'array',
+        STRING: 'string',
+        NUMBER: 'number',
+        BOOLEAN: 'boolean',
+        INTEGER: 'integer'
+      };
+
       // --- CONFIGURAZIONE ---
       const USE_MOCK = true;
       const HARDCODED_API_KEY = "";
+
+      const SYSTEM_INSTRUCTION = `
+Sei un esperto di livello mondiale in Ottimizzazione del Tasso di Conversione (CRO), Neuro-Marketing e Scienze Comportamentali.
+Il tuo compito è analizzare screenshot di landing page fornendo un report strutturato e professionale di 45 punti.
+
+STRUTTURA DEL REPORT:
+1. Executive Summary: Giudizio sintetico e critico, Top 3 problemi bloccanti, Top 3 azioni prioritarie.
+2. 40 Punti di Audit: Analisi dettagliata divisa nelle seguenti categorie:
+   - Attenzione e Prima Impressione (Points 1-4)
+   - Messaggio e Promessa (Points 5-9)
+   - Persuasione e Fiducia (Points 10-16)
+   - Azione e Frizione (Points 17-22)
+   - Percorso Decisionale (Points 23-26)
+   - Chiarezza dell'Offerta (Points 27-29)
+   - Target e Coerenza (Points 30-34)
+   - Focus sulla Conversione (Points 35-37)
+   - Struttura e Leggibilità (Points 38-40)
+
+Ogni punto deve avere: Score (0-100), Problemi (osservazione oggettiva), Azioni (soluzione pratica).
+
+3. Deep Behavioral Analysis (20 Principi):
+   Analizza l'applicazione di: Anchoring, Authority, Availability Heuristic, Bandwagon Effect, Cognitive Dissonance, Commitment and Consistency, Decoy Effect, Default Effect, Emotional Appeal, Endowment Effect, Framing, Frequency Illusion, Hyperbolic Discounting, In-group Favoritism, Loss Aversion, Paradox of Choice, Priming, Reciprocity, Scarcity, Social Proof.
+
+4. Deep NLP & Copy Analysis (20 Principi):
+   Analizza: Anchoring (NLP), Belief Change, Calibration, Chunking, Logical Levels, Meta Programs, Meta-Modeling, Milton Model, Pacing and Leading, Pattern Interrupts, Perceptual Positions, Rapport Building, Reframing, Representational Systems, Sensory Acuity, Strategy Elicitation, Submodalities, Swish Pattern, Timeline Therapy, Well-Formed Outcomes.
+   Includi Tono di voce, Livello di lettura e Trigger emotivi.
+
+5. Ottimizzazione Strategica (Points 41-44):
+   - 41. Stima Impatto (ROI atteso per area).
+   - 42. Priorità Operative (5 azioni singole + 3 combo).
+   - 43. Piano Test A/B (3 test strutturati).
+   - 44. Linee Guida Strategiche (Tono, Leve, Ordine Argomenti).
+
+6. 45. Riepilogo Finale: Punteggio globale e conclusione strategica.
+
+Heatmap: Genera coordinate (x,y da 0-100) per i punti di calore basati sulla salienza visiva.
+
+RISPONDI ESCLUSIVAMENTE IN ITALIANO.
+Sii estremamente critico. Se un elemento manca o è fatto male, penalizza lo score.
+`;
 
       const AnalysisStatus = {
         IDLE: 'IDLE',
@@ -132,167 +184,340 @@
             { x: 30, y: 30, intensity: 0.5 },
           ],
           report: {
-            headline: {
-              score: 65,
-              evaluation: "La headline descrive il servizio ma non esprime un beneficio economico o di business immediato.",
-              alternatives: [
-                "Ottieni +30% di Lead qualificati in 30 giorni senza aumentare il budget advertising",
-                "Riduci il costo di acquisizione cliente del 25% grazie alla nostra automazione AI",
-                "Trasforma i visitatori in clienti: la strategia CRO che ha generato 1.2M€ per i nostri partner"
-              ]
-            },
-            benefits: {
-              score: 55,
-              vaguePoints: [
-                "Uso di 'più visibilità' invece di traffico targetizzato",
-                "Mancanza di scenari prima/dopo per l'implementazione del software",
-                "Descrizioni tecniche prive di outcome misurabili"
+            executiveSummary: {
+              judgment: "La pagina comunica chiaramente l'offerta ma fallisce nel creare un senso di urgenza e nel differenziarsi dai competitor, risultando troppo generica per convertire utenti alto-spendenti.",
+              topProblems: [
+                "Mancanza di una Unique Value Proposition (UVP) chiara e specifica.",
+                "Eccessivo attrito nel form di contatto principale (troppi campi).",
+                "Assenza di prove sociali numeriche e case study dettagliati."
               ],
-              rewrites: [
-                { from: "Più velocità per il tuo sito", to: "Caricamento in meno di 1.2 secondi per ridurre l'abbandono del carrello del 15%" },
-                { from: "Supporto dedicato 24/7", to: "Un esperto risponde alle tue emergenze in meno di 10 minuti, garantendo continuità di business" }
+              topActions: [
+                "Riscrivere la headline focalizzandola su un beneficio economico misurabile.",
+                "Semplificare il form di contatto riducendolo a 3-4 campi essenziali.",
+                "Inserire una sezione di testimonianze con dati ROI reali subito dopo il fold."
               ]
             },
-            levers: [
-              { name: "Prova sociale", status: "debole", observation: "Presenti solo loghi, mancano testimonianze con risultati numerici.", improvement: "Inserire almeno 3 citazioni di clienti che menzionano il ROI ottenuto." },
-              { name: "Autorità", status: "assente", observation: "Nessuna certificazione o dato di mercato citato.", improvement: "Aggiungere badge di certificazione settore o numero di aziende gestite." },
-              { name: "Scarsità/Urgenza", status: "assente", observation: "L'offerta non ha limiti temporali.", improvement: "Inserire un bonus esclusivo per le prime 10 consulenze del mese." },
-              { name: "Reciprocità", status: "forte", observation: "Ottimo ebook gratuito offerto in cambio della mail.", improvement: "Posizionarlo più in alto per aumentare il tasso di opt-in." },
-              { name: "Loss Aversion", status: "assente", observation: "Non viene spiegato cosa perde il cliente non agendo ora.", improvement: "Sottolineare il costo dello spreco di budget con l'attuale setup inefficiente." },
-              { name: "Commitment", status: "debole", observation: "Il primo step richiesto è troppo impegnativo (form lungo).", improvement: "Chiedere solo l'URL del sito come primo micro-impegno." },
-            ],
-            impactAnalysis: [
-              { area: "Headline & Promessa", impact: "Alto", boost: "+15-25%", details: "Riscrivere la headline per focus sul beneficio economico immediato." },
-              { area: "Chiarezza Form & CTA", impact: "Alto", boost: "+10-20%", details: "Migliorare il contrasto visivo e ridurre i campi richiesti nel form." },
-              { area: "Prove Sociali Numeriche", impact: "Medio", boost: "+8-12%", details: "Sostituire i loghi semplici con citazioni orientate al ROI." },
-              { area: "Urgenza & Scarsità", impact: "Medio", boost: "+5-10%", details: "Inserire un trigger temporale reale vicino al punto di conversione." },
-              { area: "Fiducia Visuale (Icone/Badge)", impact: "Basso", boost: "+2-5%", details: "Aggiungere rassicurazioni grafiche sulla privacy e sicurezza." }
-            ],
-            combinedPackages: [
-              { title: "Power Hook (Headline + Social Proof)", reasoning: "La combinazione di una promessa forte supportata immediatamente da dati numerici di altri clienti abbatte lo scetticismo iniziale." },
-              { title: "Safe Conversion (Urgenza + Risk Reduction)", reasoning: "L'urgenza spinge all'azione, ma solo se accompagnata da rassicurazioni che eliminano la paura di sbagliare acquisto." },
-              { title: "Low Friction Entry (Micro-Commitment + Form Clarity)", reasoning: "Chiedere un dato semplice prima del form completo aumenta il tasso di inizio completamento del 40%." }
-            ],
-            foldAnalysis: {
-              score: 45,
-              elements: { headline: "Presente ma debole", proof: "Mancante", cta: "Poco visibile" },
-              suggestions: [
-                "Spostare i loghi dei clienti nella prima schermata (sotto la headline).",
-                "Aumentare la dimensione del font della Headline del 20%.",
-                "Assicurarsi che il bottone CTA sia visibile senza scrollare su mobile."
-              ]
-            },
-            formFriction: {
-              level: "Alto",
-              score: 35,
-              fields: 7,
-              evaluation: "Il form richiede troppi dati personali non necessari alla prima fase di contatto, scoraggiando gli utenti.",
-              suggestions: [
-                "Ridurre i campi da 7 a 4 (Nome, Email, Azienda, Messaggio).",
-                "Aggiungere microcopy: 'Rispondiamo in meno di 24 ore'.",
-                "Inserire check di privacy pre-selezionato o rassicurazione visibile."
-              ]
-            },
-            pathConsistency: {
-              issues: "La headline promette 'Risparmio', ma le testimonianze parlano di 'Qualità' e la CTA dice 'Invia Messaggio'.",
-              proposal: "Allineare tutto sul concetto di 'Efficienza': Headline (Risparmia tempo), Case Study (Come abbiamo ridotto i tempi), CTA (Inizia a risparmiare)."
-            },
-            persuasiveSequence: {
-              current: ["Soluzione", "Chi Siamo", "Funzionalità", "Contatti"],
-              recommended: ["Problema (Costo inazione)", "Promessa (Headline)", "Soluzione (Come funziona)", "Prove (Case Studies)", "Riduzione Rischio", "CTA Finale"],
-              suggestions: "Spostare la sezione 'Costi dell'Inazione' subito dopo la Headline per creare tensione emotiva prima della soluzione."
-            },
-            topPriorityCombinations: {
-              singles: [
-                { action: "Headline orientata all'outcome", impact: "Alto", why: "Crea chiarezza immediata sul valore." },
-                { action: "Semplificazione campi form", impact: "Alto", why: "Abbassa drasticamente la barriera all'ingresso." },
-                { action: "Testimonianze con dati numerici", impact: "Medio", why: "Fornisce la prova razionale del beneficio." },
-                { action: "CTA con contrasto elevato", impact: "Medio", why: "Guida l'occhio verso l'azione desiderata." },
-                { action: "Aggiunta trigger di urgenza", impact: "Medio", why: "Combatte la procrastinazione dell'utente." }
-              ],
-              combos: [
-                { action: "Headline + Prova Sociale nel Fold", impact: "Massimo", why: "Massimizza la fiducia nei primi 3 secondi." },
-                { action: "Urgenza + Rassicurazione Privacy", impact: "Elevato", why: "Spinge all'azione riducendo l'ansia da spam." },
-                { action: "Micro-impegno + Form ridotto", impact: "Elevato", why: "Aumenta la completion rate del percorso." }
-              ]
-            },
-            summary: {
-              scores: {
-                "Promessa": 65,
-                "Benefici": 55,
-                "Persuasione": 35,
-                "Testimonianze": 30,
-                "Target/Locale": 40,
-                "Leggibilità": 75,
-                "Coerenza": 50,
-                "Fiducia": 45
-              },
-              judgment: "La pagina informa ma non rassicura. Il percorso verso la conversione è interrotto da mancanze di dati concreti e microcopy poco curato vicino ai punti decisionali.",
-              overall: 47
-            },
-            strategic: {
-              positioning: {
-                score: 55,
-                description: "Il posizionamento attuale è troppo generico ('software per aziende'). Manca una specializzazione chiara che risuoni con un segmento specifico.",
-                improvedFormula: "L'unica piattaforma AI che riduce il churn del 20% per SaaS B2B automatizzando il customer success."
-              },
-              resultMechanism: {
-                score: 40,
-                steps: [
-                  { step: "Integrazione Dati", benefit: "Zero inserimento manuale, tutto si sincronizza in 5 minuti." },
-                  { step: "Analisi Predittiva", benefit: "Identifica i clienti a rischio prima che decidano di disdire." },
-                  { step: "Azione Automatica", benefit: "Invia l'offerta giusta al momento giusto senza intervento umano." }
+            categories: [
+              {
+                title: "Attenzione e Prima Impressione",
+                points: [
+                  { id: 1, name: "Gerarchia visiva e attenzione", score: 65, problems: "L'occhio cade sul logo invece che sulla headline principale.", actions: "Aumentare il peso visivo della Headline e usare il contrasto per guidare verso la CTA." },
+                  { id: 2, name: "Chiarezza strutturale e navigazione", score: 70, problems: "Menu troppo affollato che distrae dall'obiettivo unico.", actions: "Rimuovere i link secondari dal menu header per focalizzare sul pulsante di conversione." },
+                  { id: 3, name: "Esperienza d'uso e mobile", score: 55, problems: "Pulsanti troppo piccoli da cliccare su smartphone e tempi di caricamento sopra i 3s.", actions: "Ottimizzare le immagini e aumentare la dimensione delle aree cliccabili (min 44px)." },
+                  { id: 4, name: "Impatto above the fold", score: 45, problems: "Beneficio principale non visibile senza scrollare.", actions: "Spostare la promessa di valore più in alto, assicurandosi che sia leggibile istantaneamente." }
                 ]
               },
-              transformation: {
-                score: 50,
-                before: "Stress costante, perdita di fatturato imprevedibile, team sommerso da ticket di cancellazione.",
-                after: "Crescita lineare, controllo totale sui ricavi ricorrenti, team focalizzato su espansione e non su emergenze."
+              {
+                title: "Messaggio e Promessa",
+                points: [
+                  { id: 5, name: "Forza della headline", score: 50, problems: "Troppo descrittiva ('cosa facciamo') e poco orientata al risultato ('cosa ottieni').", actions: "Riscrivere usando la formula: [Risultato] + [Tempo] + [Senza dolore/costo]." },
+                  { id: 6, name: "Concretezza dei benefici", score: 40, problems: "Uso di aggettivi vaghi come 'migliore', 'veloce', 'innovativo'.", actions: "Sostituire aggettivi con numeri (es. 'Riduzione costi del 20%')." },
+                  { id: 7, name: "Differenziazione dai competitor", score: 30, problems: "La soluzione sembra identica ad altre 10 presenti sul mercato.", actions: "Individuare un 'Meccanismo Unico' (es. un algoritmo proprietario) e dargli un nome." },
+                  { id: 8, name: "Valore unico immediato", score: 45, problems: "Bisogna leggere tutta la pagina per capire perché dovrei scegliervi.", actions: "Inserire 3 bullet point di 'perché noi' subito sotto la headline." },
+                  { id: 9, name: "Coerenza promessa emotiva/prova razionale", score: 55, problems: "Promesse grandi non supportate da fatti tecnici credibili.", actions: "Aggiungere un grafico o una spiegazione 'Sotto il cofano' che spieghi il funzionamento." }
+                ]
               },
-              objections: [
-                { objection: "È troppo difficile da configurare", counter: "Setup assistito in 24 ore e integrazioni native 1-click." },
-                { objection: "Costa troppo per il mio volume", counter: "Piano 'Pay as you Grow' che si ripaga da solo col primo cliente salvato." },
-                { objection: "Abbiamo già un tool simile", counter: "La nostra IA è l'unica focalizzata sul Churn, non è un CRM generico." }
+              {
+                title: "Persuasione e Fiducia",
+                points: [
+                  { id: 10, name: "Leve psicologiche di persuasione", score: 40, problems: "Assenza totale di scarsità e scarsa autorità percepita.", actions: "Aggiungere loghi di stampa o certificazioni e un timer/limite di posti." },
+                  { id: 11, name: "Prove sociali e risultati numerici", score: 35, problems: "Testimonianze vaghe tipo 'Ottimo servizio, consigliato'.", actions: "Chiedere citazioni che parlino di numeri specifici (es. 'Fatturato +15%')." },
+                  { id: 12, name: "Supporto visivo alle promesse", score: 60, problems: "Immagini stock che non mostrano il prodotto o il risultato reale.", actions: "Usare screenshot reali o foto di clienti reali durante l'uso del servizio." },
+                  { id: 13, name: "Gestione delle obiezioni", score: 25, problems: "Ignora i dubbi tipici dell'utente (costo, tempo, complessità).", actions: "Inserire una sezione FAQ o 'Cosa dicono gli scettici' per smontare i dubbi." },
+                  { id: 14, name: "Riduzione del rischio percepito", score: 50, problems: "Manca una garanzia chiara di soddisfazione o rimborso.", actions: "Aggiungere badge 'Soddisfatti o Rimborsati' o 'Prova gratuita 14 giorni'." },
+                  { id: 15, name: "Gestione dell'ansia da contatto umano", score: 45, problems: "L'utente teme di essere richiamato da un venditore aggressivo.", actions: "Specificare: 'Consulenza gratuita, nessun impegno di acquisto'." },
+                  { id: 16, name: "Prova di attualità e freschezza", score: 30, problems: "Copyright fermo al 2022 e recensioni datate.", actions: "Aggiornare le date e mostrare risultati ottenuti nell'ultimo mese." }
+                ]
+              },
+              {
+                title: "Azione e Frizione",
+                points: [
+                  { id: 17, name: "Efficacia delle CTA", score: 60, problems: "Testo generico ('Invia', 'Scopri di più').", actions: "Usare verbi d'azione orientati al beneficio (es. 'Inizia a Risparmiare Ora')." },
+                  { id: 18, name: "Coerenza microcopy–titoli–bottoni", score: 55, problems: "Incongruenza tra ciò che promette il titolo e ciò che fa il bottone.", actions: "Assicurarsi che il bottone sia la naturale risposta alla domanda posta nel titolo." },
+                  { id: 19, name: "Attrito del form", score: 35, problems: "Richiede 8 campi inclusi telefono e indirizzo fisico.", actions: "Ridurre a 3 campi: Nome, Email, URL Sito (per analisi)." },
+                  { id: 20, name: "Percezione semplicità primo passo", score: 50, problems: "Sembra che l'impegno richiesto sia troppo grande da subito.", actions: "Promuovere un 'Check-up gratuito di 5 minuti' come primo step." },
+                  { id: 21, name: "Rapporto sforzo/valore percepito", score: 45, problems: "L'utente deve fare troppa fatica per capire cosa riceverà in cambio.", actions: "Visualizzare il 'Regalo' o il 'Risultato' finale accanto al form." },
+                  { id: 22, name: "Gradualità della richiesta di impegno", score: 40, problems: "Passa dal nulla all'acquisto/contatto pesante senza step medi.", actions: "Offrire un lead magnet (PDF/Video) prima della proposta di vendita." }
+                ]
+              },
+              {
+                title: "Percorso Decisionale",
+                points: [
+                  { id: 23, name: "Flusso persuasivo delle sezioni", score: 50, problems: "Logica saltellante: parla della soluzione prima di aver spiegato il problema.", actions: "Seguire lo schema: Problema -> Agitazione -> Soluzione -> Prova -> Azione." },
+                  { id: 24, name: "Gestione micro-decisioni allo scroll", score: 45, problems: "Ogni scroll non risolve un dubbio, ma ne crea di nuovi.", actions: "Ogni sezione deve chiudere un'obiezione e spingere a continuare la lettura." },
+                  { id: 25, name: "Ridondanza strategica messaggi chiave", score: 60, problems: "Il valore principale viene detto una volta sola e poi dimenticato.", actions: "Ripetere il beneficio principale almeno 3 volte in modi diversi." },
+                  { id: 26, name: "Chiusura forte e memorabile", score: 30, problems: "La pagina finisce nel nulla o con un footer triste.", actions: "Inserire una 'Last Chance Offer' o un riassunto dei benefici finale." }
+                ]
+              },
+              {
+                title: "Chiarezza dell'Offerta",
+                points: [
+                  { id: 27, name: "Chiarezza dell'offerta concreta", score: 65, problems: "Non è chiaro cosa ricevo esattamente dopo il pagamento/contatto.", actions: "Inserire una lista puntata: 'Cosa include il pacchetto'." },
+                  { id: 28, name: "Trasparenza su tempi e percorso", score: 40, problems: "Non so quanto tempo ci vorrà per vedere i risultati.", actions: "Creare una timeline 1-2-3 che mostri le tappe del servizio." },
+                  { id: 29, name: "Chiarezza del dopo-conversione", score: 35, problems: "Dopo aver cliccato, non so se riceverò una mail o una chiamata.", actions: "Specificare sotto il bottone: 'Riceverai una conferma via email entro 10 minuti'." }
+                ]
+              },
+              {
+                title: "Target e Coerenza del Messaggio",
+                points: [
+                  { id: 30, name: "Rilevanza per il target", score: 55, problems: "Parla a 'tutte le aziende', rischiando di non parlare a nessuno.", actions: "Specificare la nicchia (es. 'Per E-commerce di abbigliamento')." },
+                  { id: 31, name: "Chiarezza del cliente ideale", score: 45, problems: "Non dice per chi NON è adatto il servizio.", actions: "Aggiungere una sezione 'Siamo perfetti per te se...' e 'Non siamo adatti se...'." },
+                  { id: 32, name: "Coerenza tono di voce e target", score: 70, problems: "Tono troppo formale per un target di giovani creativi.", actions: "Usare un linguaggio più diretto, attivo e meno burocratico." },
+                  { id: 33, name: "Match con l'intento dell'utente", score: 60, problems: "L'utente cerca una soluzione rapida ma la pagina è prolissa.", actions: "Accorciare i testi e usare più grassetti per facilitare la scansione." },
+                  { id: 34, name: "Continuità con il canale di provenienza", score: 50, problems: "Promessa dell'annuncio Facebook non mantenuta sulla Landing.", actions: "Assicurarsi che le prime 5 parole della pagina siano le stesse dell'annuncio." }
+                ]
+              },
+              {
+                title: "Focus sulla Conversione",
+                points: [
+                  { id: 35, name: "Controllo delle distrazioni", score: 75, problems: "Presenza di icone social che portano l'utente fuori dalla pagina.", actions: "Rimuovere tutti i link esterni che non siano la CTA principale." },
+                  { id: 36, name: "Costo del non agire (loss aversion)", score: 40, problems: "L'utente non sente il dolore di restare come è adesso.", actions: "Spiegare quanti soldi/tempo sta perdendo ogni giorno senza questa soluzione." },
+                  { id: 37, name: "Urgenza e scarsità", score: 20, problems: "Nessun motivo per agire oggi invece che tra un mese.", actions: "Limitare l'offerta ai prossimi 7 giorni o ai primi 5 clienti." }
+                ]
+              },
+              {
+                title: "Struttura e Profondità",
+                points: [
+                  { id: 38, name: "Leggibilità e scansionabilità", score: 80, problems: "Muri di testo troppo lunghi.", actions: "Spezzare i paragrafi ogni 2-3 righe e usare liste puntate." },
+                  { id: 39, name: "Coerenza promessa -> contenuto -> CTA", score: 65, problems: "Si parla di 'Velocità' ma il contenuto parla di 'Sicurezza'.", actions: "Rileggere la pagina assicurandosi che ogni sezione supporti la Headline." },
+                  { id: 40, name: "Lunghezza vs Complessità", score: 60, problems: "Pagina troppo corta per un servizio da 5.000€.", actions: "Aggiungere dettagli tecnici e prove per giustificare l'alto valore." }
+                ]
+              }
+            ],
+          behavioral: [
+            { name: "Social Proof", status: "parziale", observation: "Presenti alcune citazioni ma mancano loghi di aziende note.", improvement: "Aggiungere loghi 'Trusted by' e numeri reali di utenti." },
+            { name: "Scarcity", status: "mancante", observation: "Nessun elemento di urgenza temporale.", improvement: "Inserire un'offerta a tempo limitato o contatore posti." },
+            { name: "Authority", status: "applicato", observation: "L'autorevolezza è ben comunicata tramite le certificazioni.", improvement: "" }
+          ],
+          nlp: {
+            tone: "Professionale",
+            readingLevel: "Medio",
+            emotionalTriggers: ["Paura di perdere opportunità", "Desiderio di crescita"],
+            principles: [
+              { name: "Anchoring", status: "applicato", observation: "Prezzo barrato efficace.", improvement: "" },
+              { name: "Rapport Building", status: "parziale", observation: "Linguaggio un po' troppo formale.", improvement: "Usare più 'Tu' e meno 'Noi'." }
+            ]
+          },
+            optimization: {
+              impactScores: [
+                { area: "Riprova Sociale", impact: "Alto", boost: "+22%", priority: 1 },
+                { area: "Semplificazione Form", impact: "Alto", boost: "+18%", priority: 2 },
+                { area: "Headline & UVP", impact: "Alto", boost: "+15%", priority: 3 },
+                { area: "Urgenza/Scarsità", impact: "Medio", boost: "+10%", priority: 4 },
+                { area: "Velocità Mobile", impact: "Medio", boost: "+8%", priority: 5 }
               ],
-              differentiation: {
-                score: 35,
-                uniqueElements: ["Algoritmo proprietario Churn-Predict", "Setup assistito incluso", "Garanzia 'Soddisfatti o Salvati'"]
-              },
-              motivation: {
-                score: 60,
-                suggestions: [
-                  "Usa verbi di potere legati al possesso e al controllo.",
-                  "Enfatizza il 'tempo recuperato' come valuta principale.",
-                  "Collega ogni funzionalità a un'emozione di sollievo o orgoglio professionale."
+              operationalPriorities: {
+                singles: [
+                  "Riscrivere la headline con focus sul ROI",
+                  "Rimuovere il campo 'Telefono' dal form",
+                  "Aggiungere 3 video testimonianze",
+                  "Migliorare il contrasto del bottone CTA",
+                  "Inserire garanzia 30 giorni"
+                ],
+                combos: [
+                  "Headline + Social Proof nel fold",
+                  "Urgenza + Rassicurazione Privacy",
+                  "Micro-impegno + Form ridotto"
                 ]
               },
-              narrativeCoherence: {
-                score: 45,
-                issues: "La storia si interrompe tra la promessa e la prova tecnica.",
-                recommendedStoryline: [
-                  "Lo scenario del fallimento (perché i metodi vecchi non funzionano più)",
-                  "La scoperta della nuova via (il nostro approccio)",
-                  "La prova del successo (il cliente che ce l'ha fatta)",
-                  "L'invito alla trasformazione"
-                ]
-              },
-              leversMap: {
-                ranking: ["Autorità", "Riprova Sociale", "Simpatia", "Scarsità"],
-                toStrengthen: ["Coerenza", "Reciprocità"]
-              },
-              rewritingRules: [
-                "Elimina gli aggettivi deboli (es. 'ottimo', 'veloce') e usa numeri.",
-                "Parla al 'Tu' e non al 'Noi'.",
-                "Metti il beneficio prima della caratteristica."
-              ]
+              abTestPlan: [
+                { test: "Headline A vs B", change: "Benefit-driven vs Process-driven", reason: "Capire se il target risponde più al 'come' o al 'cosa'.", metric: "Bounce Rate" },
+                { test: "Form Step vs Lungo", change: "2 step vs 1 step", reason: "Ridurre il carico cognitivo iniziale.", metric: "Conversion Rate" },
+                { test: "Testimonianze Video vs Testo", change: "Video reali vs Citazioni", reason: "Aumentare il trust percepito.", metric: "Trust Score / Time on Page" }
+              ],
+              strategicGuidelines: {
+                toneOfVoice: "Professionale ma empatico, orientato alla risoluzione di problemi concreti.",
+                dominantLevers: ["Autorità", "Riprova Sociale", "Loss Aversion"],
+                argumentOrder: "Agitazione Problema -> Meccanismo Unico -> Prova Sociale -> Garanzia -> CTA"
+              }
+            },
+            finalSummary: {
+              overallScore: 48,
+              conclusion: "La pagina ha fondamenta solide ma è 'troppo educata'. Manca di mordente commerciale, non sfida lo status quo del cliente e non offre prove inconfutabili del suo valore. Con le modifiche suggerite (specie su UVP e Form), il potenziale di crescita è stimato al +40% di conversioni."
             }
           }
         };
       };
 
+      const RESPONSE_SCHEMA = {
+        type: SchemaType.OBJECT,
+        properties: {
+          heatmap: {
+            type: SchemaType.ARRAY,
+            items: {
+              type: SchemaType.OBJECT,
+              properties: {
+                x: { type: SchemaType.NUMBER },
+                y: { type: SchemaType.NUMBER },
+                intensity: { type: SchemaType.NUMBER }
+              },
+              required: ["x", "y", "intensity"]
+            }
+          },
+          report: {
+            type: SchemaType.OBJECT,
+            properties: {
+              executiveSummary: {
+                type: SchemaType.OBJECT,
+                properties: {
+                  judgment: { type: SchemaType.STRING },
+                  topProblems: { type: SchemaType.ARRAY, items: { type: SchemaType.STRING } },
+                  topActions: { type: SchemaType.ARRAY, items: { type: SchemaType.STRING } }
+                },
+                required: ["judgment", "topProblems", "topActions"]
+              },
+              categories: {
+                type: SchemaType.ARRAY,
+                items: {
+                  type: SchemaType.OBJECT,
+                  properties: {
+                    title: { type: SchemaType.STRING },
+                    points: {
+                      type: SchemaType.ARRAY,
+                      items: {
+                        type: SchemaType.OBJECT,
+                        properties: {
+                          id: { type: SchemaType.NUMBER },
+                          name: { type: SchemaType.STRING },
+                          score: { type: SchemaType.NUMBER },
+                          problems: { type: SchemaType.STRING },
+                          actions: { type: SchemaType.STRING }
+                        },
+                        required: ["id", "name", "score", "problems", "actions"]
+                      }
+                    }
+                  },
+                  required: ["title", "points"]
+                }
+              },
+              behavioral: {
+                type: SchemaType.ARRAY,
+                description: "Analisi dei 20 principi comportamentali",
+                items: {
+                  type: SchemaType.OBJECT,
+                  properties: {
+                    name: { type: SchemaType.STRING },
+                    status: { type: SchemaType.STRING },
+                    observation: { type: SchemaType.STRING },
+                    improvement: { type: SchemaType.STRING }
+                  },
+                  required: ["name", "status", "observation", "improvement"]
+                }
+              },
+              nlp: {
+                type: SchemaType.OBJECT,
+                properties: {
+                  tone: { type: SchemaType.STRING },
+                  readingLevel: { type: SchemaType.STRING },
+                  emotionalTriggers: { type: SchemaType.ARRAY, items: { type: SchemaType.STRING } },
+                  principles: {
+                    type: SchemaType.ARRAY,
+                    items: {
+                      type: SchemaType.OBJECT,
+                      properties: {
+                        name: { type: SchemaType.STRING },
+                        status: { type: SchemaType.STRING },
+                        observation: { type: SchemaType.STRING },
+                        improvement: { type: SchemaType.STRING }
+                      },
+                      required: ["name", "status", "observation", "improvement"]
+                    }
+                  }
+                },
+                required: ["tone", "readingLevel", "emotionalTriggers", "principles"]
+              },
+              optimization: {
+                type: SchemaType.OBJECT,
+                properties: {
+                  impactScores: {
+                    type: SchemaType.ARRAY,
+                    items: {
+                      type: SchemaType.OBJECT,
+                      properties: {
+                        area: { type: SchemaType.STRING },
+                        impact: { type: SchemaType.STRING },
+                        boost: { type: SchemaType.STRING },
+                        priority: { type: SchemaType.NUMBER }
+                      },
+                      required: ["area", "impact", "boost", "priority"]
+                    }
+                  },
+                  operationalPriorities: {
+                    type: SchemaType.OBJECT,
+                    properties: {
+                      singles: { type: SchemaType.ARRAY, items: { type: SchemaType.STRING } },
+                      combos: { type: SchemaType.ARRAY, items: { type: SchemaType.STRING } }
+                    },
+                    required: ["singles", "combos"]
+                  },
+                  abTestPlan: {
+                    type: SchemaType.ARRAY,
+                    items: {
+                      type: SchemaType.OBJECT,
+                      properties: {
+                        test: { type: SchemaType.STRING },
+                        change: { type: SchemaType.STRING },
+                        reason: { type: SchemaType.STRING },
+                        metric: { type: SchemaType.STRING }
+                      },
+                      required: ["test", "change", "reason", "metric"]
+                    }
+                  },
+                  strategicGuidelines: {
+                    type: SchemaType.OBJECT,
+                    properties: {
+                      toneOfVoice: { type: SchemaType.STRING },
+                      dominantLevers: { type: SchemaType.ARRAY, items: { type: SchemaType.STRING } },
+                      argumentOrder: { type: SchemaType.STRING }
+                    },
+                    required: ["toneOfVoice", "dominantLevers", "argumentOrder"]
+                  }
+                },
+                required: ["impactScores", "operationalPriorities", "abTestPlan", "strategicGuidelines"]
+              },
+              finalSummary: {
+                type: SchemaType.OBJECT,
+                properties: {
+                  overallScore: { type: SchemaType.NUMBER },
+                  conclusion: { type: SchemaType.STRING }
+                },
+                required: ["overallScore", "conclusion"]
+              }
+            },
+            required: ["executiveSummary", "categories", "behavioral", "nlp", "optimization", "finalSummary"]
+          }
+        },
+        required: ["heatmap", "report"]
+      };
+
       const analyzeImage = async (base64Image) => {
         if (USE_MOCK) return getMockAnalysis();
-        return getMockAnalysis();
+
+        const apiKey = HARDCODED_API_KEY || window.localStorage.getItem('GEMINI_API_KEY');
+        if (!apiKey) throw new Error("API Key mancante.");
+
+        const genAI = new GoogleGenAI(apiKey);
+        const model = genAI.getGenerativeModel({
+          model: "gemini-1.5-flash",
+          generationConfig: {
+            responseMimeType: "application/json",
+            responseSchema: RESPONSE_SCHEMA,
+            temperature: 0.2,
+          },
+          systemInstruction: SYSTEM_INSTRUCTION
+        });
+
+        try {
+          const result = await model.generateContent([
+            { inlineData: { mimeType: "image/png", data: base64Image } },
+            { text: "Esegui l'audit completo di 45 punti per questa landing page." }
+          ]);
+          const response = await result.response;
+          return JSON.parse(response.text());
+        } catch (error) {
+          console.error("Gemini Error:", error);
+          throw error;
+        }
       };
 
       // --- COMPONENTS ---
@@ -317,6 +542,29 @@
           </div>
         );
       };
+
+      const PrincipleCard = ({ item }) => (
+        <div className="bg-slate-800/40 border border-slate-700/60 rounded-xl p-5 hover:border-indigo-500/30 transition-colors">
+          <div className="flex justify-between items-start mb-4">
+            <h4 className="text-lg font-bold text-white">{item.name}</h4>
+            <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${item.status === 'applicato' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : item.status === 'mancante' ? 'bg-slate-700 text-slate-400 border border-slate-600' : 'bg-amber-500/20 text-amber-400 border border-amber-500/30'}`}>
+              {item.status}
+            </span>
+          </div>
+          <div className="space-y-4">
+            <div>
+              <p className="text-[10px] text-slate-500 uppercase font-semibold mb-1 tracking-widest">Valutazione Attuale</p>
+              <p className="text-slate-300 text-sm leading-relaxed">{item.observation}</p>
+            </div>
+            {item.status !== 'applicato' && item.improvement && (
+              <div className="pt-3 border-t border-white/5">
+                <p className="text-[10px] text-indigo-400 uppercase font-semibold mb-1 tracking-widest">Come potrebbe essere</p>
+                <p className="text-slate-200 text-sm leading-relaxed">{item.improvement}</p>
+              </div>
+            )}
+          </div>
+        </div>
+      );
 
       const ScoreCard = ({ title, score, color = "text-blue-500", description }) => {
         const radius = 36;
@@ -345,267 +593,266 @@
         const { report } = data;
         return (
           <div className="space-y-24">
-            {/* 1. IMPATTO E POTENZIALE */}
+            {/* 0. EXECUTIVE SUMMARY */}
             <section className="animate-fade-in-up">
               <div className="flex items-center gap-4 mb-8">
-                <TrendingUp className="text-indigo-400 w-8 h-8" />
-                <h2 className="text-3xl font-black text-white uppercase tracking-tight">Stima Impatto sulla Conversione</h2>
+                <Activity className="text-indigo-400 w-8 h-8" />
+                <h2 className="text-3xl font-black text-white uppercase tracking-tight">0. Executive Summary</h2>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {report.impactAnalysis.map((item, i) => (
-                  <div key={i} className="glass-panel p-6 rounded-2xl border-t-4 border-indigo-500 hover:scale-[1.02] transition-transform">
-                    <div className="flex justify-between items-start mb-4">
-                      <h3 className="font-bold text-white">{item.area}</h3>
-                      <span className={`px-2 py-1 rounded text-[10px] font-black uppercase ${
-                        item.impact === 'Alto' ? 'bg-red-500/20 text-red-400' : 'bg-amber-500/20 text-amber-400'
-                      }`}>Impatto {item.impact}</span>
-                    </div>
-                    <div className="text-3xl font-black text-indigo-400 mb-2">{item.boost}</div>
-                    <p className="text-slate-400 text-sm">{item.details}</p>
+              <div className="glass-panel p-8 rounded-[32px] border-l-8 border-indigo-500 bg-indigo-500/5">
+                <p className="text-xl text-white font-bold italic mb-8">"{report.executiveSummary.judgment}"</p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <div className="space-y-4">
+                    <h3 className="text-sm font-black text-red-400 uppercase tracking-widest flex items-center gap-2"><AlertTriangle size={18} /> 3 Problemi Principali</h3>
+                    <ul className="space-y-3">
+                      {report.executiveSummary.topProblems.map((p, i) => (
+                        <li key={i} className="text-slate-300 text-sm flex gap-3 items-start">
+                          <span className="w-6 h-6 rounded-full bg-red-500/20 text-red-400 flex items-center justify-center text-xs font-bold shrink-0">{i+1}</span>
+                          {p}
+                        </li>
+                      ))}
+                    </ul>
                   </div>
-                ))}
+                  <div className="space-y-4">
+                    <h3 className="text-sm font-black text-emerald-400 uppercase tracking-widest flex items-center gap-2"><Zap size={18} /> 3 Azioni Prioritarie</h3>
+                    <ul className="space-y-3">
+                      {report.executiveSummary.topActions.map((a, i) => (
+                        <li key={i} className="text-slate-300 text-sm flex gap-3 items-start">
+                          <span className="w-6 h-6 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-xs font-bold shrink-0">{i+1}</span>
+                          {a}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
               </div>
             </section>
 
-            {/* 2. ABOVE THE FOLD */}
-            <section className="glass-panel p-10 rounded-[40px] border-l-8 border-cyan-500">
-               <div className="flex justify-between items-start mb-10">
-                 <div>
-                   <h2 className="text-3xl font-black text-white uppercase flex items-center gap-3"><Layout className="text-cyan-400" /> Efficacia Above the Fold</h2>
-                   <p className="text-slate-400 mt-2">Valutazione dei primi secondi di impatto visivo.</p>
-                 </div>
-                 <div className="text-center">
-                    <div className="text-5xl font-black text-cyan-400">{report.foldAnalysis.score}</div>
-                    <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Punteggio Fold</div>
-                 </div>
-               </div>
-               <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-10">
-                  {Object.entries(report.foldAnalysis.elements).map(([k, v], i) => (
-                    <div key={i} className="bg-slate-900/50 p-6 rounded-2xl border border-slate-700">
-                      <div className="text-xs font-bold text-slate-500 uppercase mb-2 tracking-widest">{k}</div>
-                      <div className="text-white font-bold">{v}</div>
+            {/* CATEGORIE 1-40 */}
+            {report.categories.map((cat, idx) => (
+              <section key={idx} className="space-y-8">
+                <div className="flex items-center gap-4 border-b border-slate-800 pb-6">
+                  <div className="w-12 h-12 rounded-2xl bg-slate-800 flex items-center justify-center text-xl font-black text-indigo-400">{idx + 1}</div>
+                  <h2 className="text-3xl font-black text-white uppercase tracking-tight">{cat.title}</h2>
+                </div>
+                <div className="grid grid-cols-1 gap-6">
+                  {cat.points.map((point) => (
+                    <div key={point.id} className="glass-panel p-8 rounded-[32px] hover:bg-slate-800/40 transition-all border border-white/5">
+                      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-6">
+                        <div className="flex gap-4 items-center">
+                          <div className="text-slate-500 font-black text-xl">#{point.id}</div>
+                          <h3 className="text-xl font-bold text-white">{point.name}</h3>
+                        </div>
+                        <div className="flex items-center gap-4">
+                          <div className="text-right">
+                            <div className={`text-2xl font-black ${point.score >= 80 ? 'text-emerald-500' : point.score >= 50 ? 'text-yellow-500' : 'text-red-500'}`}>{point.score}/100</div>
+                            <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Punteggio</div>
+                          </div>
+                          <div className="w-16 h-16 relative">
+                             <svg className="w-full h-full transform -rotate-90">
+                               <circle cx="32" cy="32" r="28" stroke="currentColor" strokeWidth="4" fill="transparent" className="text-slate-800" />
+                               <circle cx="32" cy="32" r="28" stroke="currentColor" strokeWidth="4" fill="transparent"
+                                 strokeDasharray={2 * Math.PI * 28}
+                                 strokeDashoffset={2 * Math.PI * 28 * (1 - point.score / 100)}
+                                 className={`${point.score >= 80 ? 'text-emerald-500' : point.score >= 50 ? 'text-yellow-500' : 'text-red-500'}`}
+                               />
+                             </svg>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div className="bg-red-500/5 p-6 rounded-2xl border border-red-500/10">
+                          <h4 className="text-[10px] font-black text-red-400 uppercase mb-3 tracking-widest flex items-center gap-2"><AlertCircle size={14} /> Problemi Rilevati</h4>
+                          <p className="text-slate-300 text-sm leading-relaxed">{point.problems}</p>
+                        </div>
+                        <div className="bg-emerald-500/5 p-6 rounded-2xl border border-emerald-500/10">
+                          <h4 className="text-[10px] font-black text-emerald-400 uppercase mb-3 tracking-widest flex items-center gap-2"><ArrowRight size={14} /> Azioni Suggerite</h4>
+                          <p className="text-white text-sm leading-relaxed font-medium">{point.actions}</p>
+                        </div>
+                      </div>
                     </div>
                   ))}
+                </div>
+              </section>
+            ))}
+
+            {/* DEEP BEHAVIORAL ANALYSIS */}
+            <section className="space-y-8">
+              <div className="flex items-center gap-4 border-b border-slate-800 pb-6">
+                <div className="bg-purple-500/20 p-3 rounded-xl border border-purple-500/30"><Brain className="w-8 h-8 text-purple-400" /></div>
+                <div>
+                  <h2 className="text-3xl font-black text-white uppercase tracking-tight">Analisi Comportamentale Profonda</h2>
+                  <p className="text-slate-400">Bias cognitivi e principi psicologici applicati</p>
+                </div>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                {report.behavioral && report.behavioral.map((item, i) => (<PrincipleCard key={i} item={item} />))}
+              </div>
+            </section>
+
+            {/* DEEP NLP & COPY ANALYSIS */}
+            <section className="space-y-8">
+              <div className="flex items-center gap-4 border-b border-slate-800 pb-6">
+                <div className="bg-pink-500/20 p-3 rounded-xl border border-pink-500/30"><MessageSquareQuote className="w-8 h-8 text-pink-400" /></div>
+                <div>
+                  <h2 className="text-3xl font-black text-white uppercase tracking-tight">Analisi NLP & Copywriting</h2>
+                  <p className="text-slate-400">Elaborazione Neuro-Linguistica e Tono di Voce</p>
+                </div>
+              </div>
+              <div className="glass-panel p-8 rounded-[32px] space-y-8">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 pb-8 border-b border-white/5">
+                    <div className="text-center sm:text-left"><div className="text-xs text-slate-500 uppercase tracking-widest font-bold mb-1">Tono di Voce</div><div className="text-2xl font-bold text-white capitalize">{report.nlp.tone}</div></div>
+                    <div className="text-center sm:text-left"><div className="text-xs text-slate-500 uppercase tracking-widest font-bold mb-1">Livello Lettura</div><div className="text-2xl font-bold text-white">{report.nlp.readingLevel}</div></div>
+                    <div className="text-center sm:text-left">
+                      <div className="text-xs text-slate-500 uppercase tracking-widest font-bold mb-1">Trigger Emotivi</div>
+                      <div className="flex flex-wrap gap-2 justify-center sm:justify-start">
+                        {report.nlp.emotionalTriggers && report.nlp.emotionalTriggers.map((t, i) => (
+                          <span key={i} className="px-2 py-1 rounded bg-pink-500/10 border border-pink-500/30 text-[10px] text-pink-300 font-bold uppercase">{t}</span>
+                        ))}
+                      </div>
+                    </div>
+                 </div>
+                 <div>
+                   <h3 className="text-lg font-bold text-white mb-6 uppercase tracking-widest">Principi NLP Rilevati</h3>
+                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                     {report.nlp.principles && report.nlp.principles.map((item, i) => (<PrincipleCard key={i} item={item} />))}
+                   </div>
+                 </div>
+              </div>
+            </section>
+
+            {/* OTTIMIZZAZIONE E STRATEGIA (41-44) */}
+            <section className="space-y-12">
+               <div className="flex items-center gap-4 border-b border-slate-800 pb-6">
+                 <div className="w-12 h-12 rounded-2xl bg-indigo-600 flex items-center justify-center text-xl font-black text-white">10</div>
+                 <h2 className="text-3xl font-black text-white uppercase tracking-tight">Ottimizzazione e Strategia</h2>
                </div>
-               <div className="space-y-4">
-                 <h3 className="text-sm font-bold text-cyan-400 uppercase tracking-widest">Interventi Immediati (Senza Scroll):</h3>
-                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                   {report.foldAnalysis.suggestions.map((s, i) => (
-                     <div key={i} className="flex gap-3 items-start text-slate-300 text-sm bg-cyan-500/5 p-4 rounded-xl border border-cyan-500/10">
-                       <ArrowRight size={16} className="text-cyan-500 shrink-0 mt-0.5" /> {s}
+
+               {/* 41. Stima Impatto */}
+               <div className="space-y-6">
+                 <h3 className="text-xl font-black text-white uppercase flex items-center gap-3"><TrendingUp className="text-indigo-400" /> 41. Stima Impatto sulle Conversioni</h3>
+                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                   {report.optimization.impactScores.map((item, i) => (
+                     <div key={i} className="glass-panel p-6 rounded-2xl border-t-4 border-indigo-500">
+                       <div className="flex justify-between items-start mb-4">
+                         <h3 className="font-bold text-white">{item.area}</h3>
+                         <span className="px-2 py-1 rounded text-[10px] font-black uppercase bg-indigo-500/20 text-indigo-400">Impatto {item.impact}</span>
+                       </div>
+                       <div className="text-3xl font-black text-indigo-400 mb-2">{item.boost}</div>
+                       <div className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Priorità #{item.priority}</div>
                      </div>
                    ))}
                  </div>
                </div>
-            </section>
 
-            {/* 3. ATTRITO DEL FORM */}
-            <section className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-               <div className="lg:col-span-4 flex flex-col gap-6">
-                 <div className="glass-panel p-8 rounded-3xl text-center border-b-8 border-red-500">
-                   <div className="bg-red-500/10 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                     <MousePointer2 className="text-red-500 w-8 h-8" />
-                   </div>
-                   <h2 className="text-xl font-black text-white uppercase tracking-tight">Attrito del Form</h2>
-                   <div className="text-5xl font-black text-red-500 my-4">{report.formFriction.score}</div>
-                   <div className={`text-xs font-black uppercase px-4 py-1 rounded-full inline-block ${
-                     report.formFriction.level === 'Alto' ? 'bg-red-500/20 text-red-400' : 'bg-amber-500/20 text-amber-400'
-                   }`}>Livello Attrito: {report.formFriction.level}</div>
-                 </div>
-               </div>
-               <div className="lg:col-span-8 glass-panel p-8 rounded-3xl flex flex-col justify-center">
-                  <p className="text-slate-300 text-lg italic mb-8">"{report.formFriction.evaluation}"</p>
-                  <div className="space-y-4">
-                    <h3 className="text-xs font-bold text-slate-500 uppercase tracking-widest">Strategie di Riduzione Attrito:</h3>
-                    {report.formFriction.suggestions.map((s, i) => (
-                      <div key={i} className="flex gap-3 items-center text-white bg-slate-800/50 p-4 rounded-2xl border border-slate-700">
-                        <CheckCircle2 className="text-emerald-500" size={20} /> {s}
-                      </div>
-                    ))}
-                  </div>
-               </div>
-            </section>
-
-            {/* 4. SEQUENZA E COERENZA */}
-            <section className="space-y-12">
-               <div className="flex items-center gap-4 border-b border-slate-800 pb-6">
-                 <Repeat className="text-amber-400 w-8 h-8" />
-                 <h2 className="text-3xl font-black text-white uppercase tracking-tight">Percorso e Coerenza</h2>
-               </div>
-
+               {/* 42. Priorità Operative */}
                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  <div className="glass-panel p-8 rounded-3xl">
-                     <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-2"><List className="text-amber-400" /> Analisi Coerenza Percorso</h3>
-                     <p className="text-slate-300 mb-6 bg-red-500/5 p-4 rounded-xl border border-red-500/10 italic">"{report.pathConsistency.issues}"</p>
-                     <div className="bg-emerald-500/5 p-6 rounded-2xl border border-emerald-500/20">
-                        <h4 className="text-xs font-bold text-emerald-500 uppercase mb-3 tracking-widest">Proposta di Allineamento Testuale:</h4>
-                        <p className="text-white font-medium">{report.pathConsistency.proposal}</p>
-                     </div>
-                  </div>
-
-                  <div className="glass-panel p-8 rounded-3xl">
-                     <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-2"><Target className="text-purple-400" /> Sequenza Persuasiva Ottimale</h3>
-                     <div className="flex flex-col gap-4">
-                        <div className="flex items-center gap-4">
-                           <span className="text-[10px] font-bold text-slate-500 w-20 shrink-0 uppercase tracking-tighter">Attuale:</span>
-                           <div className="flex gap-2 overflow-hidden overflow-x-auto pb-2 scrollbar-hide">
-                              {report.persuasiveSequence.current.map((s, i) => (
-                                <span key={i} className="text-[10px] bg-slate-800 text-slate-500 px-3 py-1 rounded-full whitespace-nowrap">{s}</span>
-                              ))}
-                           </div>
-                        </div>
-                        <div className="flex items-center gap-4">
-                           <span className="text-[10px] font-bold text-purple-400 w-20 shrink-0 uppercase tracking-tighter">Consigliata:</span>
-                           <div className="flex gap-2 overflow-hidden overflow-x-auto pb-2 scrollbar-hide">
-                              {report.persuasiveSequence.recommended.map((s, i) => (
-                                <span key={i} className="text-[10px] bg-purple-500/20 text-purple-300 px-3 py-1 rounded-full whitespace-nowrap font-bold">{s}</span>
-                              ))}
-                           </div>
-                        </div>
-                        <p className="mt-4 text-slate-400 text-sm italic">{report.persuasiveSequence.suggestions}</p>
-                     </div>
-                  </div>
-               </div>
-            </section>
-
-            {/* 5. PACCHETTI COMBINATI */}
-            <section>
-              <h2 className="text-2xl font-black text-white mb-8 uppercase tracking-tighter flex items-center gap-3"><Layers className="text-indigo-400" /> Pacchetti di Intervento Combinati</h2>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                 {report.combinedPackages.map((pkg, i) => (
-                   <div key={i} className="glass-panel p-8 rounded-[32px] bg-gradient-to-br from-indigo-600/10 to-transparent border border-indigo-500/20">
-                      <h3 className="text-indigo-400 font-black mb-4 uppercase tracking-tight">{pkg.title}</h3>
-                      <p className="text-slate-300 text-sm leading-relaxed">{pkg.reasoning}</p>
-                   </div>
-                 ))}
-              </div>
-            </section>
-
-            {/* 6. TOP PRIORITÀ FINALI */}
-            <section className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-               <div className="glass-panel p-10 rounded-[40px] bg-slate-950 border-2 border-indigo-500/30">
-                  <h2 className="text-2xl font-black text-white mb-8 uppercase tracking-tighter">Top 5 Interventi Singoli</h2>
-                  <div className="space-y-6">
-                    {report.topPriorityCombinations.singles.map((p, i) => (
-                      <div key={i} className="flex gap-4 items-start group">
-                        <div className="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center text-lg font-black text-white shrink-0 shadow-lg shadow-indigo-500/40 group-hover:scale-110 transition-transform">{i + 1}</div>
-                        <div>
-                          <p className="text-white text-base font-bold leading-tight">{p.action}</p>
-                          <p className="text-[10px] text-slate-500 uppercase font-black mt-1">Impatto {p.impact} • {p.why}</p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-               </div>
-               <div className="glass-panel p-10 rounded-[40px] bg-slate-950 border-2 border-emerald-500/30">
-                  <h2 className="text-2xl font-black text-white mb-8 uppercase tracking-tighter">Top 3 Combinazioni Strategiche</h2>
-                  <div className="space-y-6">
-                    {report.topPriorityCombinations.combos.map((p, i) => (
-                      <div key={i} className="flex gap-4 items-start group">
-                        <div className="w-10 h-10 rounded-xl bg-emerald-600 flex items-center justify-center text-lg font-black text-white shrink-0 shadow-lg shadow-emerald-500/40 group-hover:scale-110 transition-transform">{String.fromCharCode(65 + i)}</div>
-                        <div>
-                          <p className="text-white text-base font-bold leading-tight">{p.action}</p>
-                          <p className="text-[10px] text-emerald-500 uppercase font-black mt-1">Impatto {p.impact} • {p.why}</p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-               </div>
-            </section>
-
-            {/* 7. ANALISI STRATEGICA PROFONDA */}
-            <section className="space-y-16">
-               <div className="flex items-center gap-4 border-b border-slate-800 pb-6">
-                 <Brain className="text-pink-400 w-8 h-8" />
-                 <h2 className="text-3xl font-black text-white uppercase tracking-tight">Analisi Strategica Profonda</h2>
-               </div>
-
-               {/* Posizionamento & Differenziazione */}
-               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                  <div className="glass-panel p-8 rounded-3xl border-l-4 border-pink-500">
-                    <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2"><Target className="text-pink-400" /> Posizionamento</h3>
-                    <p className="text-slate-300 mb-6">{report.strategic.positioning.description}</p>
-                    <div className="bg-pink-500/10 p-6 rounded-2xl border border-pink-500/20">
-                      <h4 className="text-[10px] font-bold text-pink-400 uppercase mb-2 tracking-widest font-black">Formula di Posizionamento Suggerita:</h4>
-                      <p className="text-white text-lg font-bold italic leading-tight">"{report.strategic.positioning.improvedFormula}"</p>
-                    </div>
-                  </div>
-                  <div className="glass-panel p-8 rounded-3xl border-l-4 border-indigo-500">
-                    <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2"><ShieldCheck className="text-indigo-400" /> Elementi Differenzianti</h3>
-                    <div className="space-y-3">
-                      {report.strategic.differentiation.uniqueElements.map((el, i) => (
-                        <div key={i} className="flex items-center gap-3 bg-slate-800/50 p-3 rounded-xl border border-slate-700">
-                          <Zap size={16} className="text-yellow-400" />
-                          <span className="text-slate-200 font-medium">{el}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-               </div>
-
-               {/* Meccanismo & Trasformazione */}
-               <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-                  <div className="lg:col-span-7 glass-panel p-8 rounded-3xl">
-                    <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-2"><Activity className="text-emerald-400" /> Meccanismo del Risultato</h3>
-                    <div className="relative space-y-8 before:absolute before:left-[19px] before:top-2 before:bottom-2 before:w-0.5 before:bg-slate-700">
-                      {report.strategic.resultMechanism.steps.map((step, i) => (
-                        <div key={i} className="relative flex gap-6 items-start">
-                          <div className="w-10 h-10 rounded-full bg-slate-800 border-4 border-slate-900 flex items-center justify-center text-emerald-400 font-black z-10">{i+1}</div>
-                          <div>
-                            <h4 className="text-white font-bold">{step.step}</h4>
-                            <p className="text-slate-400 text-sm">{step.benefit}</p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                  <div className="lg:col-span-5 glass-panel p-8 rounded-3xl bg-gradient-to-br from-indigo-900/20 to-transparent">
-                    <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-2"><ArrowRightCircle className="text-indigo-400" /> Narrativa di Trasformazione</h3>
-                    <div className="space-y-6">
-                      <div className="p-4 rounded-2xl bg-red-500/5 border border-red-500/10">
-                        <div className="text-[10px] font-bold text-red-400 uppercase mb-1">Stato Attuale (Dolore)</div>
-                        <p className="text-slate-300 text-sm italic">{report.strategic.transformation.before}</p>
-                      </div>
-                      <div className="flex justify-center"><ArrowRight className="text-slate-700 rotate-90 lg:rotate-0" /></div>
-                      <div className="p-4 rounded-2xl bg-emerald-500/5 border border-emerald-500/10">
-                        <div className="text-[10px] font-bold text-emerald-400 uppercase mb-1">Stato Futuro (Piacere)</div>
-                        <p className="text-white text-sm font-bold italic">{report.strategic.transformation.after}</p>
-                      </div>
-                    </div>
-                  </div>
-               </div>
-
-               {/* Obiezioni & Copywriting */}
-               <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                  <div className="lg:col-span-2 glass-panel p-8 rounded-3xl">
-                    <h3 className="text-xl font-bold text-white mb-6">Gestione Obiezioni & Credibilità</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {report.strategic.objections.map((obj, i) => (
-                        <div key={i} className="p-5 rounded-2xl bg-slate-900/50 border border-slate-700 hover:border-indigo-500/30 transition-colors">
-                           <div className="flex items-start gap-2 mb-2 text-slate-400">
-                             <MessageSquareQuote size={16} className="shrink-0 mt-1" />
-                             <span className="text-xs font-bold italic">"{obj.objection}"</span>
-                           </div>
-                           <div className="flex items-start gap-2 text-white">
-                             <CheckCircle2 size={16} className="text-emerald-500 shrink-0 mt-1" />
-                             <span className="text-sm font-medium">{obj.counter}</span>
-                           </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                  <div className="glass-panel p-8 rounded-3xl">
-                    <h3 className="text-xl font-bold text-white mb-6">Copywriting Rules</h3>
+                  <div className="glass-panel p-8 rounded-3xl border-2 border-indigo-500/30">
+                    <h3 className="text-xl font-black text-white mb-6 uppercase">42. 5 Azioni ad Alto Impatto</h3>
                     <ul className="space-y-4">
-                      {report.strategic.rewritingRules.map((rule, i) => (
-                        <li key={i} className="flex gap-3 text-slate-300 text-sm">
-                          <div className="w-1.5 h-1.5 rounded-full bg-pink-500 mt-2 shrink-0" />
-                          {rule}
+                      {report.optimization.operationalPriorities.singles.map((s, i) => (
+                        <li key={i} className="flex gap-4 items-center text-slate-200">
+                          <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center font-black text-white shrink-0">{i+1}</div>
+                          {s}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                  <div className="glass-panel p-8 rounded-3xl border-2 border-emerald-500/30">
+                    <h3 className="text-xl font-black text-white mb-6 uppercase">3 Combinazioni da Testare</h3>
+                    <ul className="space-y-4">
+                      {report.optimization.operationalPriorities.combos.map((c, i) => (
+                        <li key={i} className="flex gap-4 items-center text-slate-200">
+                          <div className="w-8 h-8 rounded-lg bg-emerald-600 flex items-center justify-center font-black text-white shrink-0">{String.fromCharCode(65+i)}</div>
+                          {c}
                         </li>
                       ))}
                     </ul>
                   </div>
                </div>
+
+               {/* 43. Piano Test A/B */}
+               <div className="glass-panel p-8 rounded-[32px]">
+                 <h3 className="text-xl font-black text-white mb-8 uppercase flex items-center gap-3"><Layers className="text-purple-400" /> 43. Piano di Test A/B Consigliato</h3>
+                 <div className="grid grid-cols-1 gap-4">
+                   {report.optimization.abTestPlan.map((test, i) => (
+                     <div key={i} className="p-6 rounded-2xl bg-slate-900/50 border border-slate-700 grid grid-cols-1 md:grid-cols-4 gap-6">
+                       <div>
+                         <div className="text-[10px] font-bold text-slate-500 uppercase mb-1">Test</div>
+                         <div className="text-white font-bold">{test.test}</div>
+                       </div>
+                       <div>
+                         <div className="text-[10px] font-bold text-slate-500 uppercase mb-1">Modifica</div>
+                         <div className="text-white text-sm">{test.change}</div>
+                       </div>
+                       <div>
+                         <div className="text-[10px] font-bold text-slate-500 uppercase mb-1">Motivazione</div>
+                         <div className="text-slate-400 text-xs">{test.reason}</div>
+                       </div>
+                       <div>
+                         <div className="text-[10px] font-bold text-purple-400 uppercase mb-1">Metrica Chiave</div>
+                         <div className="text-purple-400 font-bold">{test.metric}</div>
+                       </div>
+                     </div>
+                   ))}
+                 </div>
+               </div>
+
+               {/* 44. Linee Guida Strategiche */}
+               <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                 <div className="glass-panel p-8 rounded-3xl border-l-4 border-pink-500">
+                   <h3 className="text-sm font-black text-pink-400 uppercase mb-4 tracking-widest">Tono di Voce</h3>
+                   <p className="text-slate-300 text-sm leading-relaxed">{report.optimization.strategicGuidelines.toneOfVoice}</p>
+                 </div>
+                 <div className="glass-panel p-8 rounded-3xl border-l-4 border-yellow-500">
+                   <h3 className="text-sm font-black text-yellow-500 uppercase mb-4 tracking-widest">Leve Dominanti</h3>
+                   <div className="flex flex-wrap gap-2">
+                     {report.optimization.strategicGuidelines.dominantLevers.map((l, i) => (
+                       <span key={i} className="bg-yellow-500/10 text-yellow-500 px-3 py-1 rounded-full text-[10px] font-black uppercase">{l}</span>
+                     ))}
+                   </div>
+                 </div>
+                 <div className="glass-panel p-8 rounded-3xl border-l-4 border-emerald-500">
+                   <h3 className="text-sm font-black text-emerald-400 uppercase mb-4 tracking-widest">Ordine Argomenti</h3>
+                   <p className="text-slate-300 text-sm leading-relaxed">{report.optimization.strategicGuidelines.argumentOrder}</p>
+                 </div>
+               </div>
+            </section>
+
+            {/* 45. OUTPUT FINALE */}
+            <section className="glass-panel p-10 rounded-[40px] bg-slate-950 border-2 border-indigo-500/30 text-center">
+              <div className="w-20 h-20 bg-indigo-600 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-2xl shadow-indigo-500/40">
+                <CheckCircle2 size={40} className="text-white" />
+              </div>
+              <h2 className="text-4xl font-black text-white uppercase tracking-tighter mb-4">45. Riepilogo Finale</h2>
+              <div className="text-6xl font-black text-indigo-400 mb-8">{report.finalSummary.overallScore}<span className="text-2xl text-slate-600">/100</span></div>
+              <p className="text-xl text-slate-300 italic max-w-3xl mx-auto leading-relaxed">"{report.finalSummary.conclusion}"</p>
+
+              <div className="mt-12 overflow-hidden rounded-2xl border border-slate-800">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="bg-slate-900">
+                      <th className="p-4 text-xs font-black text-slate-500 uppercase">Categoria</th>
+                      <th className="p-4 text-xs font-black text-slate-500 uppercase text-center">Score Medio</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {report.categories.map((cat, i) => {
+                      const avg = Math.round(cat.points.reduce((acc, p) => acc + p.score, 0) / cat.points.length);
+                      return (
+                        <tr key={i} className="border-t border-slate-800">
+                          <td className="p-4 text-sm font-bold text-white">{cat.title}</td>
+                          <td className="p-4 text-center">
+                            <span className={`px-3 py-1 rounded-full text-xs font-black ${avg >= 80 ? 'bg-emerald-500/20 text-emerald-400' : avg >= 50 ? 'bg-yellow-500/20 text-yellow-400' : 'bg-red-500/20 text-red-400'}`}>
+                              {avg}/100
+                            </span>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
             </section>
           </div>
         );
@@ -617,7 +864,15 @@
         const [result, setResult] = useState(null);
         const [errorMsg, setErrorMsg] = useState("");
         const [isDownloading, setIsDownloading] = useState(false);
+        const [apiKey, setApiKey] = useState(window.localStorage.getItem('GEMINI_API_KEY') || "");
+        const [showSettings, setShowSettings] = useState(false);
+        const [useMock, setUseMock] = useState(true);
         const reportRef = useRef(null);
+
+        const saveApiKey = (val) => {
+          setApiKey(val);
+          window.localStorage.setItem('GEMINI_API_KEY', val);
+        };
 
         const handleFileChange = useCallback(async (event) => {
           const file = event.target.files?.[0];
@@ -651,9 +906,26 @@
         };
 
         const handleAnalyze = async () => {
+          if (!imagePreview) return;
+          const base64Data = imagePreview.split(',')[1];
           setStatus(AnalysisStatus.ANALYZING);
-          try { setResult(await analyzeImage()); setStatus(AnalysisStatus.COMPLETE); }
-          catch (err) { setErrorMsg("Errore imprevisto."); setStatus(AnalysisStatus.ERROR); }
+          setErrorMsg("");
+
+          // Temporary override of global USE_MOCK for this specific run based on state
+          const originalUseMock = window.USE_MOCK;
+          window.USE_MOCK = useMock;
+
+          try {
+            const data = await analyzeImage(base64Data);
+            setResult(data);
+            setStatus(AnalysisStatus.COMPLETE);
+          }
+          catch (err) {
+            setErrorMsg(err.message || "Errore imprevisto durante l'analisi.");
+            setStatus(AnalysisStatus.ERROR);
+          } finally {
+            window.USE_MOCK = originalUseMock;
+          }
         };
 
         return (
@@ -664,7 +936,39 @@
                   <div className="bg-indigo-600 p-2 rounded-lg"><ScanEye className="w-6 h-6 text-white" /></div>
                   <h1 className="text-xl font-bold bg-gradient-to-r from-indigo-400 to-cyan-400 bg-clip-text text-transparent">CreativeScore AI</h1>
                 </div>
+                <div className="flex items-center gap-4">
+                  <button onClick={() => setShowSettings(!showSettings)} className="text-slate-400 hover:text-white transition-colors p-2">
+                    <Zap className={`w-5 h-5 ${apiKey ? 'text-yellow-400' : ''}`} />
+                  </button>
+                </div>
               </div>
+              {showSettings && (
+                <div className="bg-slate-900 border-b border-white/10 p-4 animate-fade-in-up">
+                  <div className="max-w-7xl mx-auto flex flex-col md:flex-row gap-4 items-end md:items-center">
+                    <div className="flex-grow">
+                      <label className="text-[10px] font-bold text-slate-500 uppercase mb-1 block">Gemini API Key</label>
+                      <input
+                        type="password"
+                        value={apiKey}
+                        onChange={(e) => saveApiKey(e.target.value)}
+                        placeholder="Incolla qui la tua API Key..."
+                        className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-sm text-white focus:outline-none focus:border-indigo-500"
+                      />
+                    </div>
+                    <div className="flex items-center gap-2 bg-slate-800 p-2 rounded-lg border border-slate-700">
+                      <span className="text-xs text-slate-400 px-2 font-bold uppercase">Modalità:</span>
+                      <button
+                        onClick={() => setUseMock(true)}
+                        className={`px-3 py-1 rounded-md text-[10px] font-bold uppercase ${useMock ? 'bg-indigo-600 text-white' : 'text-slate-500 hover:text-slate-300'}`}
+                      >Mock</button>
+                      <button
+                        onClick={() => setUseMock(false)}
+                        className={`px-3 py-1 rounded-md text-[10px] font-bold uppercase ${!useMock ? 'bg-indigo-600 text-white' : 'text-slate-500 hover:text-slate-300'}`}
+                      >Real AI</button>
+                    </div>
+                  </div>
+                </div>
+              )}
             </header>
 
             <main className="max-w-7xl mx-auto px-4 mt-10">
@@ -705,8 +1009,11 @@
                          <HeatmapOverlay imageSrc={imagePreview} points={result.heatmap} />
                       </div>
                       <div className="lg:col-span-5 grid grid-cols-2 gap-4">
-                        <div className="col-span-2"><ScoreCard title="Conversion Score Globale" score={result.report.summary.overall} /></div>
-                        {["Promessa", "Benefici", "Persuasione", "Fiducia"].map(s => <ScoreCard key={s} title={s} score={result.report.summary.scores[s]} />)}
+                        <div className="col-span-2"><ScoreCard title="Conversion Score Globale" score={result.report.finalSummary.overallScore} /></div>
+                        <ScoreCard title="Attenzione" score={Math.round(result.report.categories[0].points.reduce((acc,p)=>acc+p.score,0)/result.report.categories[0].points.length)} />
+                        <ScoreCard title="Messaggio" score={Math.round(result.report.categories[1].points.reduce((acc,p)=>acc+p.score,0)/result.report.categories[1].points.length)} />
+                        <ScoreCard title="Fiducia" score={Math.round(result.report.categories[2].points.reduce((acc,p)=>acc+p.score,0)/result.report.categories[2].points.length)} />
+                        <ScoreCard title="Azione" score={Math.round(result.report.categories[3].points.reduce((acc,p)=>acc+p.score,0)/result.report.categories[3].points.length)} />
                       </div>
                     </div>
                     <ReportSection data={result} />

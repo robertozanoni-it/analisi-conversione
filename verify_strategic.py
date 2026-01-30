@@ -43,10 +43,12 @@ async def verify_app():
 
             # Check for specific sections
             sections = [
-                "Stima Impatto sulla Conversione",
-                "Efficacia Above the Fold",
-                "Attrito del Form",
-                "Analisi Strategica Profonda"
+                "Executive Summary",
+                "Attenzione e Prima Impressione",
+                "Messaggio e Promessa",
+                "Analisi Comportamentale Profonda",
+                "Analisi NLP & Copywriting",
+                "Riepilogo Finale"
             ]
             for section in sections:
                 found = await page.query_selector(f"h2:has-text('{section}')")
