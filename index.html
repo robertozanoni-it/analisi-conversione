@@ -47,7 +47,7 @@
         cursor: wait;
       }
       @media print {
-        header, .upload-section, .download-buttons, .footer-info {
+        header, .upload-section, .download-buttons {
           display: none !important;
         }
         body {
@@ -72,7 +72,7 @@
         .text-slate-400, .text-slate-500 {
           color: #64748b !important;
         }
-        .bg-slate-900, .bg-slate-800 {
+        .bg-slate-900, .bg-slate-800, .bg-slate-950 {
           background-color: #f8fafc !important;
         }
       }
@@ -103,13 +103,14 @@
       import {
         Upload, ScanEye, Sparkles, AlertCircle, Loader2, ArrowRight,
         CheckCircle2, AlertTriangle, Lightbulb, Brain, Activity, MessageSquareQuote, Zap, Search, ArrowRightCircle,
-        Download, FileText, Image as ImageIcon, FileDown, ShieldCheck, Target, Lock, MousePointer2, Layout, Users
+        Download, FileText, Image as ImageIcon, FileDown, ShieldCheck, Target, Lock, MousePointer2, Layout, Users,
+        TrendingUp, Layers, Repeat, List
       } from 'lucide-react';
       import html2canvas from 'html2canvas';
       import { jsPDF } from 'jspdf';
 
       // --- CONFIGURAZIONE ---
-      const USE_MOCK = true; // Impostare su false per tentare l'uso dell'API reale di Gemini
+      const USE_MOCK = true;
       const HARDCODED_API_KEY = "";
 
       const AnalysisStatus = {
@@ -160,114 +161,59 @@
               { name: "Loss Aversion", status: "assente", observation: "Non viene spiegato cosa perde il cliente non agendo ora.", improvement: "Sottolineare il costo dello spreco di budget con l'attuale setup inefficiente." },
               { name: "Commitment", status: "debole", observation: "Il primo step richiesto è troppo impegnativo (form lungo).", improvement: "Chiedere solo l'URL del sito come primo micro-impegno." },
             ],
-            testimonials: {
-              score: 30,
-              evaluation: "Le testimonianze attuali sono generiche (es. 'Ottimo servizio').",
-              transformations: [
-                { from: "Ci siamo trovati bene con loro.", to: "Grazie al loro intervento abbiamo raddoppiato i contatti mensili passando da 20 a 45 lead in soli due mesi." }
-              ]
-            },
-            localRelevance: {
-              score: 40,
-              evaluation: "Il copy è totalmente agnostico rispetto all'area geografica e al settore specifico.",
+            impactAnalysis: [
+              { area: "Headline & Promessa", impact: "Alto", boost: "+15-25%", details: "Riscrivere la headline per focus sul beneficio economico immediato." },
+              { area: "Chiarezza Form & CTA", impact: "Alto", boost: "+10-20%", details: "Migliorare il contrasto visivo e ridurre i campi richiesti nel form." },
+              { area: "Prove Sociali Numeriche", impact: "Medio", boost: "+8-12%", details: "Sostituire i loghi semplici con citazioni orientate al ROI." },
+              { area: "Urgenza & Scarsità", impact: "Medio", boost: "+5-10%", details: "Inserire un trigger temporale reale vicino al punto di conversione." },
+              { area: "Fiducia Visuale (Icone/Badge)", impact: "Basso", boost: "+2-5%", details: "Aggiungere rassicurazioni grafiche sulla privacy e sicurezza." }
+            ],
+            combinedPackages: [
+              { title: "Power Hook (Headline + Social Proof)", reasoning: "La combinazione di una promessa forte supportata immediatamente da dati numerici di altri clienti abbatte lo scetticismo iniziale." },
+              { title: "Safe Conversion (Urgenza + Risk Reduction)", reasoning: "L'urgenza spinge all'azione, ma solo se accompagnata da rassicurazioni che eliminano la paura di sbagliare acquisto." },
+              { title: "Low Friction Entry (Micro-Commitment + Form Clarity)", reasoning: "Chiedere un dato semplice prima del form completo aumenta il tasso di inizio completamento del 40%." }
+            ],
+            foldAnalysis: {
+              score: 45,
+              elements: { headline: "Presente ma debole", proof: "Mancante", cta: "Poco visibile" },
               suggestions: [
-                "Menziona esplicitamente il mercato italiano/locale per creare fiducia.",
-                "Utilizza termini specifici della categoria merceologica del target (es. 'per eCommerce Fashion')."
+                "Spostare i loghi dei clienti nella prima schermata (sotto la headline).",
+                "Aumentare la dimensione del font della Headline del 20%.",
+                "Assicurarsi che il bottone CTA sia visibile senza scrollare su mobile."
               ]
             },
-            scannability: {
-              score: 75,
-              evaluation: "I paragrafi sono di lunghezza corretta, ma mancano sottotitoli orientati al beneficio.",
-              indications: [
-                "Trasforma la sezione 'Chi siamo' in un elenco puntato di 3 vantaggi chiave.",
-                "Sostituisci i titoli delle sezioni con promesse (es. da 'Caratteristiche' a 'Perché venderai di più')."
+            formFriction: {
+              level: "Alto",
+              score: 35,
+              fields: 7,
+              evaluation: "Il form richiede troppi dati personali non necessari alla prima fase di contatto, scoraggiando gli utenti.",
+              suggestions: [
+                "Ridurre i campi da 7 a 4 (Nome, Email, Azienda, Messaggio).",
+                "Aggiungere microcopy: 'Rispondiamo in meno di 24 ore'.",
+                "Inserire check di privacy pre-selezionato o rassicurazione visibile."
               ]
             },
-            consistency: {
-               evaluation: "Esiste un disallineamento tra la promessa della headline e l'invito all'azione.",
-               disalignments: ["La headline promette risparmio, ma la CTA dice 'Scopri di più' invece di 'Inizia a risparmiare'."],
-               proposal: "Inizia a risparmiare oggi"
+            pathConsistency: {
+              issues: "La headline promette 'Risparmio', ma le testimonianze parlano di 'Qualità' e la CTA dice 'Invia Messaggio'.",
+              proposal: "Allineare tutto sul concetto di 'Efficienza': Headline (Risparmia tempo), Case Study (Come abbiamo ridotto i tempi), CTA (Inizia a risparmiare)."
             },
-            missingTriggers: [
-              "Offerta valida solo fino a venerdì a mezzanotte.",
-              "Solo 3 slot rimasti per l'audit gratuito di questa settimana.",
-              "Prezzo bloccato per i primi 50 iscritti."
-            ],
-            priorities: [
-              "Riscrivere la Headline inserendo un numero e un tempo (Outcome misurabile).",
-              "Sostituire la CTA generica con una coerente con la promessa di business.",
-              "Aggiungere una sezione di urgenza/scarsità vicino al form di contatto.",
-              "Trasformare le testimonianze in mini-case study numerici.",
-              "Specificare il target locale/settoriale nel primo scroll."
-            ],
-            trustAnalysis: {
-              persuasiveFlow: {
-                score: 58,
-                evaluation: "L'ordine attuale è Soluzione -> Funzionalità -> CTA. Manca la fase di empatia sul problema e la riduzione del rischio prima del form.",
-                suggestions: "Spostare la sezione 'Come Funziona' dopo aver evidenziato il Problema. Rafforzare la sezione Testimonianze prima della CTA finale."
-              },
-              lossAversion: {
-                score: 25,
-                evaluation: "La pagina si concentra solo sui vantaggi, ignorando completamente le conseguenze dell'inazione.",
-                examples: [
-                  "Ogni mese di attesa ti costa mediamente il 15% di contatti qualificati che finiscono ai tuoi competitor.",
-                  "Senza un sistema automatizzato, stai sprecando 4 ore al giorno in task manuali ripetitivi.",
-                  "Il costo del tuo attuale tasso di conversione inefficiente è di circa 2.400€/mese in budget advertising non ottimizzato."
-                ]
-              },
-              concretenessConsistency: {
-                score: 45,
-                evaluation: "La promessa iniziale di 'risultati garantiti' non viene supportata da dati reali nelle sezioni centrali.",
-                genericPoints: [
-                  "Abbiamo aiutato molte aziende a crescere.",
-                  "Il nostro software è il più veloce sul mercato.",
-                  "Supporto clienti di alta qualità."
-                ],
-                rewrites: [
-                  "Oltre 140 aziende italiane hanno aumentato il fatturato del 20% nel primo trimestre.",
-                  "Benchmark certificato: 40% più veloce rispetto ai 3 principali competitor europei.",
-                  "Tempo medio di risposta ticket: 8 minuti con risoluzione al primo contatto nel 92% dei casi."
-                ]
-              },
-              riskReduction: {
-                score: 60,
-                evaluation: "Presente la prova gratuita, ma mancano rassicurazioni sulla privacy e sulla facilità di disdetta.",
-                microcopy: [
-                  "Nessuna carta di credito richiesta per la prova di 14 giorni.",
-                  "Cancellazione con un click, senza telefonate o moduli infiniti.",
-                  "I tuoi dati sono criptati e non verranno mai ceduti a terzi."
-                ]
-              },
-              formMicrocopy: {
-                score: 35,
-                evaluation: "Il form ha etichette standard e un bottone 'Invia'. Non crea aspettativa né fiducia.",
-                suggestions: [
-                  "Sopra il form: 'Ricevi il tuo piano personalizzato in meno di 24 ore'.",
-                  "Sotto il bottone: 'Ti contatteremo solo per la consulenza, niente spam (promesso)'.",
-                  "Sul bottone: 'Ottieni la mia analisi gratuita' invece di 'Invia'."
-                ]
-              },
-              visualTrustHierarchy: {
-                score: 50,
-                evaluation: "I numeri chiave sono piccoli e hanno lo stesso peso visivo del testo normale.",
-                indications: [
-                  "Ingrandire i font dei numeri percentuali (+30%, 1.2M€).",
-                  "Usare box con sfondo contrastante per le citazioni dei clienti.",
-                  "Aggiungere icone di spunta (check) verdi accanto ai benefici principali."
-                ]
-              },
-              awarenessLevels: {
-                score: 40,
-                evaluation: "La pagina assume che l'utente conosca già perfettamente il problema, saltando la fase educativa.",
-                suggestions: [
-                  "Aggiungere una sezione 'Perché i metodi tradizionali non funzionano più' per chi non è ancora consapevole della causa del problema.",
-                  "Inserire un FAQ tecnico a fondo pagina per gli utenti più esperti e analitici."
-                ]
-              },
-              additionalPriorities: [
-                "Inserire microcopy rassicurante ('niente spam', 'risposta in 24h') immediatamente sotto il bottone della CTA.",
-                "Creare una sezione 'Costo dell'Inazione' che quantifichi economicamente il vantaggio perso ogni giorno.",
-                "Riorganizzare il flusso logico: Problema -> Costo dell'Inazione -> Soluzione -> Prove -> CTA."
+            persuasiveSequence: {
+              current: ["Soluzione", "Chi Siamo", "Funzionalità", "Contatti"],
+              recommended: ["Problema (Costo inazione)", "Promessa (Headline)", "Soluzione (Come funziona)", "Prove (Case Studies)", "Riduzione Rischio", "CTA Finale"],
+              suggestions: "Spostare la sezione 'Costi dell'Inazione' subito dopo la Headline per creare tensione emotiva prima della soluzione."
+            },
+            topPriorityCombinations: {
+              singles: [
+                { action: "Headline orientata all'outcome", impact: "Alto", why: "Crea chiarezza immediata sul valore." },
+                { action: "Semplificazione campi form", impact: "Alto", why: "Abbassa drasticamente la barriera all'ingresso." },
+                { action: "Testimonianze con dati numerici", impact: "Medio", why: "Fornisce la prova razionale del beneficio." },
+                { action: "CTA con contrasto elevato", impact: "Medio", why: "Guida l'occhio verso l'azione desiderata." },
+                { action: "Aggiunta trigger di urgenza", impact: "Medio", why: "Combatte la procrastinazione dell'utente." }
+              ],
+              combos: [
+                { action: "Headline + Prova Sociale nel Fold", impact: "Massimo", why: "Massimizza la fiducia nei primi 3 secondi." },
+                { action: "Urgenza + Rassicurazione Privacy", impact: "Elevato", why: "Spinge all'azione riducendo l'ansia da spam." },
+                { action: "Micro-impegno + Form ridotto", impact: "Elevato", why: "Aumenta la completion rate del percorso." }
               ]
             },
             summary: {
@@ -290,20 +236,7 @@
 
       const analyzeImage = async (base64Image) => {
         if (USE_MOCK) return getMockAnalysis();
-
-        // Nota: Caricamento dinamico per evitare crash se il modulo non è disponibile
-        try {
-          const { GoogleGenAI } = await import("https://esm.sh/@google/genai@0.1.1");
-          const apiKey = HARDCODED_API_KEY || window.process?.env?.API_KEY || '';
-          if (!apiKey) throw new Error("API Key mancante per l'analisi reale.");
-
-          const ai = new GoogleGenAI({ apiKey });
-          // La logica per Gemini andrebbe qui...
-          return getMockAnalysis(); // Fallback se non ancora implementato
-        } catch (e) {
-          console.warn("Errore caricamento modulo Gemini, uso mock di fallback.", e);
-          return getMockAnalysis();
-        }
+        return getMockAnalysis();
       };
 
       // --- COMPONENTS ---
@@ -311,30 +244,19 @@
       const HeatmapOverlay = ({ imageSrc, points }) => {
         return (
           <div className="relative w-full overflow-hidden rounded-lg shadow-2xl group border border-slate-700 bg-slate-900">
-            <img
-              src={imageSrc}
-              alt="Analyzed Content"
-              className="w-full h-auto block object-contain"
-            />
+            <img src={imageSrc} alt="Analyzed Content" className="w-full h-auto block object-contain" />
             <div className="absolute inset-0 mix-blend-screen pointer-events-none">
               {points && points.map((point, index) => (
-                <div
-                  key={index}
-                  className="absolute rounded-full blur-xl"
+                <div key={index} className="absolute rounded-full blur-xl"
                   style={{
-                    left: `${point.x}%`,
-                    top: `${point.y}%`,
-                    width: `${100 * point.intensity}px`,
-                    height: `${100 * point.intensity}px`,
+                    left: `${point.x}%`, top: `${point.y}%`,
+                    width: `${100 * point.intensity}px`, height: `${100 * point.intensity}px`,
                     transform: 'translate(-50%, -50%)',
                     background: `radial-gradient(circle, rgba(255, 0, 0, 0.8) 0%, rgba(255, 165, 0, 0.5) 40%, rgba(0, 0, 255, 0) 70%)`,
                     opacity: point.intensity * 0.8,
                   }}
                 />
               ))}
-            </div>
-            <div className="absolute bottom-2 right-2 bg-black/70 px-2 py-1 rounded text-xs text-white backdrop-blur-sm z-10">
-              Eye Tracking Simulato
             </div>
           </div>
         );
@@ -344,10 +266,7 @@
         const radius = 36;
         const circumference = 2 * Math.PI * radius;
         const offset = circumference - (score / 100) * circumference;
-
-        let strokeColor = "stroke-red-500";
-        if (score >= 50) strokeColor = "stroke-yellow-500";
-        if (score >= 80) strokeColor = "stroke-emerald-500";
+        let strokeColor = score >= 80 ? "stroke-emerald-500" : score >= 50 ? "stroke-yellow-500" : "stroke-red-500";
 
         return (
           <div className="glass-panel p-6 rounded-xl flex flex-col items-center justify-center text-center relative overflow-hidden group hover:bg-slate-800/80 transition-all duration-300">
@@ -362,7 +281,6 @@
               </div>
             </div>
             <h3 className="text-lg font-semibold text-slate-200">{title}</h3>
-            {description && <p className="text-xs text-slate-500 mt-2">{description}</p>}
           </div>
         );
       };
@@ -370,359 +288,177 @@
       const ReportSection = ({ data }) => {
         const { report } = data;
         return (
-          <div className="space-y-16">
-            {/* 1. Headline */}
-            <section className="glass-panel p-8 rounded-3xl border-l-4 border-indigo-500">
-              <div className="flex justify-between items-center mb-6">
-                 <h2 className="text-2xl font-bold text-white flex items-center gap-3"><MessageSquareQuote className="text-indigo-400" /> 1. Qualità della Headline</h2>
-                 <span className="bg-slate-800 text-indigo-400 px-3 py-1 rounded-full font-bold">{report.headline.score}/100</span>
+          <div className="space-y-24">
+            {/* 1. IMPATTO E POTENZIALE */}
+            <section className="animate-fade-in-up">
+              <div className="flex items-center gap-4 mb-8">
+                <TrendingUp className="text-indigo-400 w-8 h-8" />
+                <h2 className="text-3xl font-black text-white uppercase tracking-tight">Stima Impatto sulla Conversione</h2>
               </div>
-              <p className="text-slate-300 mb-6 text-lg">{report.headline.evaluation}</p>
-              <div className="bg-slate-900/50 p-6 rounded-2xl border border-slate-700">
-                <h3 className="text-sm font-bold text-indigo-400 uppercase mb-4 tracking-wider">3 Proposte Alternative</h3>
-                <div className="space-y-4">
-                  {report.headline.alternatives.map((alt, i) => (
-                    <div key={i} className="flex gap-3 items-start">
-                      <div className="bg-indigo-500/20 text-indigo-400 p-1 rounded mt-1"><Sparkles size={14} /></div>
-                      <p className="text-white font-medium italic">"{alt}"</p>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {report.impactAnalysis.map((item, i) => (
+                  <div key={i} className="glass-panel p-6 rounded-2xl border-t-4 border-indigo-500 hover:scale-[1.02] transition-transform">
+                    <div className="flex justify-between items-start mb-4">
+                      <h3 className="font-bold text-white">{item.area}</h3>
+                      <span className={`px-2 py-1 rounded text-[10px] font-black uppercase ${
+                        item.impact === 'Alto' ? 'bg-red-500/20 text-red-400' : 'bg-amber-500/20 text-amber-400'
+                      }`}>Impatto {item.impact}</span>
+                    </div>
+                    <div className="text-3xl font-black text-indigo-400 mb-2">{item.boost}</div>
+                    <p className="text-slate-400 text-sm">{item.details}</p>
+                  </div>
+                ))}
+              </div>
+            </section>
+
+            {/* 2. ABOVE THE FOLD */}
+            <section className="glass-panel p-10 rounded-[40px] border-l-8 border-cyan-500">
+               <div className="flex justify-between items-start mb-10">
+                 <div>
+                   <h2 className="text-3xl font-black text-white uppercase flex items-center gap-3"><Layout className="text-cyan-400" /> Efficacia Above the Fold</h2>
+                   <p className="text-slate-400 mt-2">Valutazione dei primi secondi di impatto visivo.</p>
+                 </div>
+                 <div className="text-center">
+                    <div className="text-5xl font-black text-cyan-400">{report.foldAnalysis.score}</div>
+                    <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Punteggio Fold</div>
+                 </div>
+               </div>
+               <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-10">
+                  {Object.entries(report.foldAnalysis.elements).map(([k, v], i) => (
+                    <div key={i} className="bg-slate-900/50 p-6 rounded-2xl border border-slate-700">
+                      <div className="text-xs font-bold text-slate-500 uppercase mb-2 tracking-widest">{k}</div>
+                      <div className="text-white font-bold">{v}</div>
                     </div>
                   ))}
-                </div>
-              </div>
-            </section>
-
-            {/* 2. Benefici */}
-            <section className="glass-panel p-8 rounded-3xl border-l-4 border-emerald-500">
-              <div className="flex justify-between items-center mb-6">
-                 <h2 className="text-2xl font-bold text-white flex items-center gap-3"><Zap className="text-emerald-400" /> 2. Concretezza dei Benefici</h2>
-                 <span className="bg-slate-800 text-emerald-400 px-3 py-1 rounded-full font-bold">{report.benefits.score}/100</span>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div>
-                  <h3 className="text-sm font-bold text-slate-500 uppercase mb-3">Punti troppo vaghi</h3>
-                  <ul className="space-y-2">
-                    {report.benefits.vaguePoints.map((p, i) => (
-                      <li key={i} className="flex gap-2 text-slate-400 text-sm italic">
-                        <AlertCircle size={14} className="text-amber-500 shrink-0 mt-1" /> {p}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-                <div>
-                  <h3 className="text-sm font-bold text-emerald-500 uppercase mb-3">Riscrittura in ottica Risultato</h3>
-                  <div className="space-y-3">
-                    {report.benefits.rewrites.map((r, i) => (
-                      <div key={i} className="text-xs bg-emerald-500/5 p-3 rounded-lg border border-emerald-500/10">
-                        <div className="text-slate-500 line-through mb-1">{r.from}</div>
-                        <div className="text-emerald-300 font-medium">➔ {r.to}</div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </section>
-
-            {/* 3. Leve Comportamentali (Tabella) */}
-            <section className="glass-panel p-8 rounded-3xl overflow-hidden">
-               <h2 className="text-2xl font-bold text-white mb-8 flex items-center gap-3"><Brain className="text-purple-400" /> 3. Analisi Leve Comportamentali</h2>
-               <div className="overflow-x-auto">
-                 <table className="w-full text-left">
-                   <thead>
-                     <tr className="border-b border-slate-700">
-                       <th className="pb-4 font-bold text-slate-400 text-sm uppercase">Leva Psicologica</th>
-                       <th className="pb-4 font-bold text-slate-400 text-sm uppercase">Stato</th>
-                       <th className="pb-4 font-bold text-slate-400 text-sm uppercase">Osservazione</th>
-                       <th className="pb-4 font-bold text-slate-400 text-sm uppercase">Suggerimento</th>
-                     </tr>
-                   </thead>
-                   <tbody className="divide-y divide-slate-800">
-                     {report.levers.map((l, i) => (
-                       <tr key={i} className="hover:bg-slate-800/30 transition-colors">
-                         <td className="py-4 font-bold text-white">{l.name}</td>
-                         <td className="py-4">
-                           <span className={`px-2 py-1 rounded text-[10px] font-black uppercase ${
-                             l.status === 'forte' ? 'bg-emerald-500/20 text-emerald-400' :
-                             l.status === 'debole' ? 'bg-amber-500/20 text-amber-400' :
-                             'bg-red-500/20 text-red-400'
-                           }`}>{l.status}</span>
-                         </td>
-                         <td className="py-4 text-slate-400 text-sm pr-4">{l.observation}</td>
-                         <td className="py-4 text-indigo-300 text-sm italic">{l.improvement}</td>
-                       </tr>
-                     ))}
-                   </tbody>
-                 </table>
                </div>
-            </section>
-
-            {/* 4 & 5. Testimonianze e Local */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-               <section className="glass-panel p-8 rounded-3xl">
-                 <div className="flex justify-between items-center mb-6">
-                    <h2 className="text-xl font-bold text-white flex items-center gap-3"><CheckCircle2 size={20} className="text-blue-400" /> 4. Prove Sociali</h2>
-                    <span className="text-blue-400 font-bold">{report.testimonials.score}/100</span>
-                 </div>
-                 <p className="text-slate-400 text-sm mb-4">{report.testimonials.evaluation}</p>
-                 <div className="space-y-3">
-                   {report.testimonials.transformations.map((t, i) => (
-                     <div key={i} className="p-3 bg-blue-500/5 rounded-xl border border-blue-500/10 text-xs">
-                        <div className="text-slate-500 mb-1">Da: "{t.from}"</div>
-                        <div className="text-blue-200 font-medium">A: "{t.to}"</div>
+               <div className="space-y-4">
+                 <h3 className="text-sm font-bold text-cyan-400 uppercase tracking-widest">Interventi Immediati (Senza Scroll):</h3>
+                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                   {report.foldAnalysis.suggestions.map((s, i) => (
+                     <div key={i} className="flex gap-3 items-start text-slate-300 text-sm bg-cyan-500/5 p-4 rounded-xl border border-cyan-500/10">
+                       <ArrowRight size={16} className="text-cyan-500 shrink-0 mt-0.5" /> {s}
                      </div>
                    ))}
                  </div>
-               </section>
+               </div>
+            </section>
 
-               <section className="glass-panel p-8 rounded-3xl">
-                 <div className="flex justify-between items-center mb-6">
-                    <h2 className="text-xl font-bold text-white flex items-center gap-3"><Activity size={20} className="text-orange-400" /> 5. Rilevanza Target</h2>
-                    <span className="text-orange-400 font-bold">{report.localRelevance.score}/100</span>
+            {/* 3. ATTRITO DEL FORM */}
+            <section className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+               <div className="lg:col-span-4 flex flex-col gap-6">
+                 <div className="glass-panel p-8 rounded-3xl text-center border-b-8 border-red-500">
+                   <div className="bg-red-500/10 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                     <MousePointer2 className="text-red-500 w-8 h-8" />
+                   </div>
+                   <h2 className="text-xl font-black text-white uppercase tracking-tight">Attrito del Form</h2>
+                   <div className="text-5xl font-black text-red-500 my-4">{report.formFriction.score}</div>
+                   <div className={`text-xs font-black uppercase px-4 py-1 rounded-full inline-block ${
+                     report.formFriction.level === 'Alto' ? 'bg-red-500/20 text-red-400' : 'bg-amber-500/20 text-amber-400'
+                   }`}>Livello Attrito: {report.formFriction.level}</div>
                  </div>
-                 <p className="text-slate-400 text-sm mb-4">{report.localRelevance.evaluation}</p>
-                 <ul className="space-y-2">
-                    {report.localRelevance.suggestions.map((s, i) => (
-                      <li key={i} className="flex gap-2 text-slate-300 text-xs">
-                        <ArrowRight size={14} className="text-orange-500 shrink-0" /> {s}
-                      </li>
+               </div>
+               <div className="lg:col-span-8 glass-panel p-8 rounded-3xl flex flex-col justify-center">
+                  <p className="text-slate-300 text-lg italic mb-8">"{report.formFriction.evaluation}"</p>
+                  <div className="space-y-4">
+                    <h3 className="text-xs font-bold text-slate-500 uppercase tracking-widest">Strategie di Riduzione Attrito:</h3>
+                    {report.formFriction.suggestions.map((s, i) => (
+                      <div key={i} className="flex gap-3 items-center text-white bg-slate-800/50 p-4 rounded-2xl border border-slate-700">
+                        <CheckCircle2 className="text-emerald-500" size={20} /> {s}
+                      </div>
                     ))}
-                 </ul>
-               </section>
-            </div>
+                  </div>
+               </div>
+            </section>
 
-            {/* 6. Scansionabilità */}
-            <section className="glass-panel p-8 rounded-3xl">
-              <div className="flex justify-between items-center mb-6">
-                 <h2 className="text-2xl font-bold text-white flex items-center gap-3"><Search className="text-cyan-400" /> 6. Scansionabilità</h2>
-                 <span className="text-cyan-400 font-bold">{report.scannability.score}/100</span>
-              </div>
-              <p className="text-slate-300 mb-6">{report.scannability.evaluation}</p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                 {report.scannability.indications.map((ind, i) => (
-                   <div key={i} className="flex gap-3 items-center p-4 bg-slate-800/50 rounded-xl border border-slate-700 text-sm text-slate-200">
-                     <CheckCircle2 className="text-cyan-500 shrink-0" size={18} /> {ind}
+            {/* 4. SEQUENZA E COERENZA */}
+            <section className="space-y-12">
+               <div className="flex items-center gap-4 border-b border-slate-800 pb-6">
+                 <Repeat className="text-amber-400 w-8 h-8" />
+                 <h2 className="text-3xl font-black text-white uppercase tracking-tight">Percorso e Coerenza</h2>
+               </div>
+
+               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <div className="glass-panel p-8 rounded-3xl">
+                     <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-2"><List className="text-amber-400" /> Analisi Coerenza Percorso</h3>
+                     <p className="text-slate-300 mb-6 bg-red-500/5 p-4 rounded-xl border border-red-500/10 italic">"{report.pathConsistency.issues}"</p>
+                     <div className="bg-emerald-500/5 p-6 rounded-2xl border border-emerald-500/20">
+                        <h4 className="text-xs font-bold text-emerald-500 uppercase mb-3 tracking-widest">Proposta di Allineamento Testuale:</h4>
+                        <p className="text-white font-medium">{report.pathConsistency.proposal}</p>
+                     </div>
+                  </div>
+
+                  <div className="glass-panel p-8 rounded-3xl">
+                     <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-2"><Target className="text-purple-400" /> Sequenza Persuasiva Ottimale</h3>
+                     <div className="flex flex-col gap-4">
+                        <div className="flex items-center gap-4">
+                           <span className="text-[10px] font-bold text-slate-500 w-20 shrink-0 uppercase tracking-tighter">Attuale:</span>
+                           <div className="flex gap-2 overflow-hidden overflow-x-auto pb-2 scrollbar-hide">
+                              {report.persuasiveSequence.current.map((s, i) => (
+                                <span key={i} className="text-[10px] bg-slate-800 text-slate-500 px-3 py-1 rounded-full whitespace-nowrap">{s}</span>
+                              ))}
+                           </div>
+                        </div>
+                        <div className="flex items-center gap-4">
+                           <span className="text-[10px] font-bold text-purple-400 w-20 shrink-0 uppercase tracking-tighter">Consigliata:</span>
+                           <div className="flex gap-2 overflow-hidden overflow-x-auto pb-2 scrollbar-hide">
+                              {report.persuasiveSequence.recommended.map((s, i) => (
+                                <span key={i} className="text-[10px] bg-purple-500/20 text-purple-300 px-3 py-1 rounded-full whitespace-nowrap font-bold">{s}</span>
+                              ))}
+                           </div>
+                        </div>
+                        <p className="mt-4 text-slate-400 text-sm italic">{report.persuasiveSequence.suggestions}</p>
+                     </div>
+                  </div>
+               </div>
+            </section>
+
+            {/* 5. PACCHETTI COMBINATI */}
+            <section>
+              <h2 className="text-2xl font-black text-white mb-8 uppercase tracking-tighter flex items-center gap-3"><Layers className="text-indigo-400" /> Pacchetti di Intervento Combinati</h2>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                 {report.combinedPackages.map((pkg, i) => (
+                   <div key={i} className="glass-panel p-8 rounded-[32px] bg-gradient-to-br from-indigo-600/10 to-transparent border border-indigo-500/20">
+                      <h3 className="text-indigo-400 font-black mb-4 uppercase tracking-tight">{pkg.title}</h3>
+                      <p className="text-slate-300 text-sm leading-relaxed">{pkg.reasoning}</p>
                    </div>
                  ))}
               </div>
             </section>
 
-            {/* 7. Allineamento */}
-            <section className="glass-panel p-8 rounded-3xl border-t-4 border-amber-500">
-               <h2 className="text-2xl font-bold text-white mb-4">7. Coerenza e Allineamento</h2>
-               <p className="text-slate-300 mb-6">{report.consistency.evaluation}</p>
-               <div className="bg-amber-500/10 p-5 rounded-2xl border border-amber-500/20">
-                  <h3 className="text-xs font-bold text-amber-500 uppercase mb-3">Disallineamenti Critici</h3>
-                  <ul className="space-y-2 mb-4">
-                    {report.consistency.disalignments.map((d, i) => (
-                      <li key={i} className="text-slate-300 text-sm flex gap-2">
-                        <AlertTriangle size={14} className="text-amber-500 mt-1 shrink-0" /> {d}
-                      </li>
+            {/* 6. TOP PRIORITÀ FINALI */}
+            <section className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+               <div className="glass-panel p-10 rounded-[40px] bg-slate-950 border-2 border-indigo-500/30">
+                  <h2 className="text-2xl font-black text-white mb-8 uppercase tracking-tighter">Top 5 Interventi Singoli</h2>
+                  <div className="space-y-6">
+                    {report.topPriorityCombinations.singles.map((p, i) => (
+                      <div key={i} className="flex gap-4 items-start group">
+                        <div className="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center text-lg font-black text-white shrink-0 shadow-lg shadow-indigo-500/40 group-hover:scale-110 transition-transform">{i + 1}</div>
+                        <div>
+                          <p className="text-white text-base font-bold leading-tight">{p.action}</p>
+                          <p className="text-[10px] text-slate-500 uppercase font-black mt-1">Impatto {p.impact} • {p.why}</p>
+                        </div>
+                      </div>
                     ))}
-                  </ul>
-                  <div className="pt-4 border-t border-amber-500/20 text-white font-bold">
-                    Proposta Unificante: <span className="text-amber-400 italic">"{report.consistency.proposal}"</span>
+                  </div>
+               </div>
+               <div className="glass-panel p-10 rounded-[40px] bg-slate-950 border-2 border-emerald-500/30">
+                  <h2 className="text-2xl font-black text-white mb-8 uppercase tracking-tighter">Top 3 Combinazioni Strategiche</h2>
+                  <div className="space-y-6">
+                    {report.topPriorityCombinations.combos.map((p, i) => (
+                      <div key={i} className="flex gap-4 items-start group">
+                        <div className="w-10 h-10 rounded-xl bg-emerald-600 flex items-center justify-center text-lg font-black text-white shrink-0 shadow-lg shadow-emerald-500/40 group-hover:scale-110 transition-transform">{String.fromCharCode(65 + i)}</div>
+                        <div>
+                          <p className="text-white text-base font-bold leading-tight">{p.action}</p>
+                          <p className="text-[10px] text-emerald-500 uppercase font-black mt-1">Impatto {p.impact} • {p.why}</p>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                </div>
             </section>
-
-            {/* 8. Trigger Mancanti */}
-            <section className="glass-panel p-8 rounded-3xl">
-               <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-3"><Zap className="text-yellow-400" /> 8. Trigger di Urgenza/Scarsità Mancanti</h2>
-               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {report.missingTriggers.map((mt, i) => (
-                    <div key={i} className="p-4 bg-yellow-500/5 rounded-2xl border border-yellow-500/10 text-yellow-200 text-sm font-medium italic">
-                      "{mt}"
-                    </div>
-                  ))}
-               </div>
-            </section>
-
-            {/* --- ANALISI PERCORSO PERSUASIVO & FIDUCIA --- */}
-            <div className="pt-10 border-t border-slate-800">
-               <div className="flex items-center gap-4 mb-12">
-                  <div className="bg-amber-500/20 p-3 rounded-2xl border border-amber-500/30">
-                    <ShieldCheck className="w-8 h-8 text-amber-400" />
-                  </div>
-                  <div>
-                    <h2 className="text-3xl font-black text-white uppercase tracking-tight">Analisi Percorso Persuasivo & Fiducia</h2>
-                    <p className="text-slate-400">Valutazione della progressione psicologica e riduzione del rischio.</p>
-                  </div>
-               </div>
-
-               <div className="space-y-12">
-                  {/* 10. Flusso Persuasivo */}
-                  <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
-                    <div className="md:col-span-4 flex flex-col gap-4">
-                      <div className="glass-panel p-6 rounded-2xl text-center border-b-4 border-amber-500">
-                        <div className="text-xs font-bold text-slate-500 uppercase mb-1 tracking-widest">Progressione Persuasiva</div>
-                        <div className="text-4xl font-black text-white">{report.trustAnalysis.persuasiveFlow.score}<span className="text-lg text-slate-500">/100</span></div>
-                      </div>
-                    </div>
-                    <div className="md:col-span-8 glass-panel p-8 rounded-2xl">
-                      <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2"><ArrowRightCircle className="text-amber-400" /> 10. Flusso persuasivo delle sezioni</h3>
-                      <p className="text-slate-300 mb-6 italic">"{report.trustAnalysis.persuasiveFlow.evaluation}"</p>
-                      <div className="bg-amber-500/5 p-4 rounded-xl border-l-4 border-amber-500">
-                        <p className="text-sm text-white font-medium">{report.trustAnalysis.persuasiveFlow.suggestions}</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* 11. Loss Aversion */}
-                  <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
-                    <div className="md:col-span-4 flex flex-col gap-4">
-                      <div className="glass-panel p-6 rounded-2xl text-center border-b-4 border-red-500">
-                        <div className="text-xs font-bold text-slate-500 uppercase mb-1 tracking-widest">Loss Aversion</div>
-                        <div className="text-4xl font-black text-white">{report.trustAnalysis.lossAversion.score}<span className="text-lg text-slate-500">/100</span></div>
-                      </div>
-                    </div>
-                    <div className="md:col-span-8 glass-panel p-8 rounded-2xl">
-                      <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2"><AlertTriangle className="text-red-400" /> 11. Evidenziazione del costo del non agire</h3>
-                      <p className="text-slate-300 mb-6">{report.trustAnalysis.lossAversion.evaluation}</p>
-                      <div className="space-y-3">
-                        <h4 className="text-xs font-bold text-red-400 uppercase tracking-widest">Esempi di frasi ad alto impatto:</h4>
-                        {report.trustAnalysis.lossAversion.examples.map((ex, i) => (
-                          <div key={i} className="flex gap-3 text-sm text-slate-200 bg-red-500/5 p-3 rounded-lg border border-red-500/10 italic">
-                             <div className="text-red-500 font-bold shrink-0">!</div>
-                             "{ex}"
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* 12. Coerenza Concretezza */}
-                  <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
-                    <div className="md:col-span-4 flex flex-col gap-4">
-                      <div className="glass-panel p-6 rounded-2xl text-center border-b-4 border-indigo-500">
-                        <div className="text-xs font-bold text-slate-500 uppercase mb-1 tracking-widest">Coerenza Promessa</div>
-                        <div className="text-4xl font-black text-white">{report.trustAnalysis.concretenessConsistency.score}<span className="text-lg text-slate-500">/100</span></div>
-                      </div>
-                    </div>
-                    <div className="md:col-span-8 glass-panel p-8 rounded-2xl">
-                      <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2"><Target className="text-indigo-400" /> 12. Coerenza della concretezza</h3>
-                      <p className="text-slate-300 mb-6">{report.trustAnalysis.concretenessConsistency.evaluation}</p>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div className="space-y-3">
-                           <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-tighter">Copy Generico (Da evitare)</h4>
-                           {report.trustAnalysis.concretenessConsistency.genericPoints.map((p, i) => (
-                             <div key={i} className="text-xs text-slate-400 line-through opacity-60">{p}</div>
-                           ))}
-                        </div>
-                        <div className="space-y-3">
-                           <h4 className="text-[10px] font-black text-indigo-400 uppercase tracking-tighter">Riscrittura Misurabile</h4>
-                           {report.trustAnalysis.concretenessConsistency.rewrites.map((p, i) => (
-                             <div key={i} className="text-xs text-indigo-200 font-bold bg-indigo-500/5 p-2 rounded border border-indigo-500/20">{p}</div>
-                           ))}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* 13. Riduzione Rischio */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                     <div className="glass-panel p-8 rounded-3xl border-t-4 border-emerald-500">
-                        <div className="flex justify-between items-center mb-6">
-                           <h3 className="text-xl font-bold text-white flex items-center gap-2"><Lock className="text-emerald-400" /> 13. Fiducia e sicurezza</h3>
-                           <span className="text-emerald-400 font-bold">{report.trustAnalysis.riskReduction.score}/100</span>
-                        </div>
-                        <p className="text-slate-400 text-sm mb-6">{report.trustAnalysis.riskReduction.evaluation}</p>
-                        <div className="space-y-3">
-                           <h4 className="text-[10px] font-black text-emerald-500 uppercase">Microcopy rassicurante consigliato:</h4>
-                           {report.trustAnalysis.riskReduction.microcopy.map((m, i) => (
-                             <div key={i} className="flex gap-2 text-xs text-emerald-200 font-medium">
-                               <CheckCircle2 size={14} className="text-emerald-500 shrink-0" /> {m}
-                             </div>
-                           ))}
-                        </div>
-                     </div>
-
-                     {/* 14. Microcopy Form */}
-                     <div className="glass-panel p-8 rounded-3xl border-t-4 border-blue-500">
-                        <div className="flex justify-between items-center mb-6">
-                           <h3 className="text-xl font-bold text-white flex items-center gap-2"><MousePointer2 className="text-blue-400" /> 14. Chiarezza post-azione</h3>
-                           <span className="text-blue-400 font-bold">{report.trustAnalysis.formMicrocopy.score}/100</span>
-                        </div>
-                        <p className="text-slate-400 text-sm mb-6">{report.trustAnalysis.formMicrocopy.evaluation}</p>
-                        <div className="space-y-3">
-                           <h4 className="text-[10px] font-black text-blue-500 uppercase">Suggerimenti operativi form:</h4>
-                           {report.trustAnalysis.formMicrocopy.suggestions.map((s, i) => (
-                             <div key={i} className="text-xs text-blue-100 bg-blue-500/5 p-3 rounded-xl border border-blue-500/10 italic">
-                                "{s}"
-                             </div>
-                           ))}
-                        </div>
-                     </div>
-                  </div>
-
-                  {/* 15 & 16. Gerarchia & Consapevolezza */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                     <div className="glass-panel p-8 rounded-3xl">
-                        <div className="flex justify-between items-center mb-6">
-                           <h3 className="text-xl font-bold text-white flex items-center gap-2"><Layout className="text-cyan-400" /> 15. Gerarchia visiva fiducia</h3>
-                           <span className="text-cyan-400 font-bold">{report.trustAnalysis.visualTrustHierarchy.score}/100</span>
-                        </div>
-                        <p className="text-slate-400 text-sm mb-6">{report.trustAnalysis.visualTrustHierarchy.evaluation}</p>
-                        <ul className="space-y-2">
-                           {report.trustAnalysis.visualTrustHierarchy.indications.map((ind, i) => (
-                             <li key={i} className="flex gap-2 text-slate-300 text-xs">
-                               <div className="w-1 h-1 bg-cyan-400 rounded-full mt-1.5 shrink-0" /> {ind}
-                             </li>
-                           ))}
-                        </ul>
-                     </div>
-
-                     <div className="glass-panel p-8 rounded-3xl">
-                        <div className="flex justify-between items-center mb-6">
-                           <h3 className="text-xl font-bold text-white flex items-center gap-2"><Users className="text-purple-400" /> 16. Consapevolezza</h3>
-                           <span className="text-purple-400 font-bold">{report.trustAnalysis.awarenessLevels.score}/100</span>
-                        </div>
-                        <p className="text-slate-400 text-sm mb-6">{report.trustAnalysis.awarenessLevels.evaluation}</p>
-                        <ul className="space-y-2">
-                           {report.trustAnalysis.awarenessLevels.suggestions.map((s, i) => (
-                             <li key={i} className="flex gap-2 text-slate-300 text-xs">
-                               <div className="w-1 h-1 bg-purple-400 rounded-full mt-1.5 shrink-0" /> {s}
-                             </li>
-                           ))}
-                        </ul>
-                     </div>
-                  </div>
-               </div>
-            </div>
-
-            {/* 17. Sintesi Operativa Finale */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-               <section className="glass-panel p-10 rounded-[40px] bg-gradient-to-br from-indigo-600/20 to-slate-900 border-2 border-indigo-500/30">
-                  <h2 className="text-2xl font-black text-white mb-8 uppercase tracking-tighter">9. Top 5 Interventi Prioritari</h2>
-                  <div className="space-y-5">
-                    {report.priorities.map((p, i) => (
-                      <div key={i} className="flex gap-4 items-center group">
-                        <div className="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center text-lg font-black text-white shrink-0 shadow-lg shadow-indigo-500/40 group-hover:scale-110 transition-transform">
-                          {i + 1}
-                        </div>
-                        <p className="text-white text-base font-bold leading-tight">{p}</p>
-                      </div>
-                    ))}
-                  </div>
-               </section>
-
-               <section className="glass-panel p-10 rounded-[40px] bg-gradient-to-br from-amber-600/20 to-slate-900 border-2 border-amber-500/30">
-                  <h2 className="text-2xl font-black text-white mb-8 uppercase tracking-tighter">17. Azioni Prioritarie: Fiducia & Sicurezza</h2>
-                  <div className="space-y-5">
-                    {report.trustAnalysis.additionalPriorities.map((p, i) => (
-                      <div key={i} className="flex gap-4 items-center group">
-                        <div className="w-10 h-10 rounded-xl bg-amber-600 flex items-center justify-center text-lg font-black text-white shrink-0 shadow-lg shadow-amber-500/40 group-hover:scale-110 transition-transform">
-                          {String.fromCharCode(65 + i)}
-                        </div>
-                        <p className="text-white text-base font-bold leading-tight">{p}</p>
-                      </div>
-                    ))}
-                  </div>
-               </section>
-            </div>
           </div>
         );
       };
-
-      // --- APP COMPONENT ---
 
       const App = () => {
         const [status, setStatus] = useState(AnalysisStatus.IDLE);
@@ -735,227 +471,92 @@
         const handleFileChange = useCallback(async (event) => {
           const file = event.target.files?.[0];
           if (!file) return;
-
-          if (!file.type.startsWith('image/')) {
-            setErrorMsg("Si prega di caricare un file immagine valido (PNG, JPG).");
-            return;
-          }
-
           const reader = new FileReader();
-          reader.onloadend = () => {
-            const base64String = reader.result;
-            setImagePreview(base64String);
-            setStatus(AnalysisStatus.IDLE);
-            setResult(null);
-            setErrorMsg("");
-          };
+          reader.onloadend = () => { setImagePreview(reader.result); setResult(null); setErrorMsg(""); };
           reader.readAsDataURL(file);
         }, []);
 
         const downloadReport = async (format) => {
           if (!reportRef.current) return;
           setIsDownloading(true);
-
           try {
             if (format === 'docx') {
-              const content = reportRef.current.innerHTML;
-              const header = "<html xmlns:o='urn:schemas-microsoft-com:office:office' "+
-                    "xmlns:w='urn:schemas-microsoft-com:office:word' "+
-                    "xmlns='http://www.w3.org/TR/REC-html40'>"+
-                    "<head><meta charset='utf-8'><title>Export HTML to Word</title><style>body { font-family: sans-serif; }</style></head><body>";
-              const footer = "</body></html>";
-              const sourceHTML = header+content+footer;
-
-              const blob = new Blob(['\ufeff', sourceHTML], {
-                type: 'application/msword'
-              });
-
-              const url = URL.createObjectURL(blob);
+              const sourceHTML = "<html><head><meta charset='utf-8'></head><body>" + reportRef.current.innerHTML + "</body></html>";
+              const blob = new Blob(['\ufeff', sourceHTML], { type: 'application/msword' });
               const link = document.createElement("a");
-              link.href = url;
-              link.download = `CreativeScore-Analysis-${Date.now()}.doc`;
-              link.click();
-              URL.revokeObjectURL(url);
-              return;
+              link.href = URL.createObjectURL(blob); link.download = `CreativeScore-Analysis-${Date.now()}.doc`; link.click();
+            } else {
+              const canvas = await html2canvas(reportRef.current, { scale: 2, useCORS: true, backgroundColor: '#0f172a' });
+              if (format === 'pdf') {
+                const pdf = new jsPDF({ orientation: 'portrait', unit: 'px', format: [canvas.width / 2, canvas.height / 2] });
+                pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, canvas.width / 2, canvas.height / 2);
+                pdf.save(`CreativeScore-Analysis-${Date.now()}.pdf`);
+              } else {
+                const link = document.createElement('a'); link.download = `CreativeScore-Analysis-${Date.now()}.${format}`;
+                link.href = canvas.toDataURL(`image/${format}`, 1.0); link.click();
+              }
             }
-
-            const canvas = await html2canvas(reportRef.current, {
-              scale: 2,
-              useCORS: true,
-              backgroundColor: '#0f172a',
-              logging: false,
-            });
-
-            if (format === 'png' || format === 'jpeg') {
-              const image = canvas.toDataURL(`image/${format}`, 1.0);
-              const link = document.createElement('a');
-              link.download = `CreativeScore-Analysis-${Date.now()}.${format}`;
-              link.href = image;
-              link.click();
-            } else if (format === 'pdf') {
-              const imgData = canvas.toDataURL('image/png');
-              const pdf = new jsPDF({
-                orientation: 'portrait',
-                unit: 'px',
-                format: [canvas.width / 2, canvas.height / 2]
-              });
-
-              pdf.addImage(imgData, 'PNG', 0, 0, canvas.width / 2, canvas.height / 2);
-              pdf.save(`CreativeScore-Analysis-${Date.now()}.pdf`);
-            }
-          } catch (err) {
-            console.error("Download error:", err);
-            alert("Errore durante il download del report.");
-          } finally {
-            setIsDownloading(false);
-          }
+          } catch (err) { alert("Errore durante il download."); } finally { setIsDownloading(false); }
         };
 
         const handleAnalyze = async () => {
-          if (!imagePreview) return;
-          const base64Data = imagePreview.split(',')[1];
           setStatus(AnalysisStatus.ANALYZING);
-          try {
-            const data = await analyzeImage(base64Data);
-            setResult(data);
-            setStatus(AnalysisStatus.COMPLETE);
-          } catch (err) {
-            setErrorMsg(err.message || "Si è verificato un errore imprevisto.");
-            setStatus(AnalysisStatus.ERROR);
-          }
+          try { setResult(await analyzeImage()); setStatus(AnalysisStatus.COMPLETE); }
+          catch (err) { setErrorMsg("Errore imprevisto."); setStatus(AnalysisStatus.ERROR); }
         };
 
         return (
           <div className="min-h-screen pb-20">
             <header className="border-b border-white/10 bg-[#0f172a]/80 backdrop-blur-md sticky top-0 z-50">
-              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+              <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <div className="bg-indigo-600 p-2 rounded-lg"><ScanEye className="w-6 h-6 text-white" /></div>
                   <h1 className="text-xl font-bold bg-gradient-to-r from-indigo-400 to-cyan-400 bg-clip-text text-transparent">CreativeScore AI</h1>
                 </div>
-                <div className="hidden sm:flex items-center gap-4 text-sm text-slate-400"><span>v1.0.0 Standalone</span></div>
               </div>
             </header>
 
-            <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-10">
-              <div className="flex flex-col items-center justify-center text-center mb-12">
+            <main className="max-w-7xl mx-auto px-4 mt-10">
+              <div className="text-center mb-12">
                  <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">Ottimizza la Conversione con <br /><span className="text-indigo-400">Analisi AI Predittiva</span></h2>
-                 <p className="text-slate-400 max-w-2xl text-lg mb-8 leading-relaxed">Carica uno screenshot della tua landing page.</p>
-
-                 <div className="w-full max-w-xl upload-section">
-                   <label className={`flex flex-col items-center justify-center w-full rounded-2xl cursor-pointer transition-all duration-300 ${imagePreview ? 'border-2 border-indigo-500 bg-indigo-900/20 p-4' : 'h-64 border-2 border-dashed border-slate-700 hover:border-indigo-400 hover:bg-slate-800'}`}>
-                      <div className="flex flex-col items-center justify-center">
-                          {imagePreview ? (
-                            <div className="relative w-full flex flex-col items-center">
-                              <img src={imagePreview} className="max-h-[400px] w-auto object-contain rounded-lg shadow-2xl mb-4" alt="Preview" />
-                              <div className="flex items-center gap-2 text-indigo-300 bg-indigo-950/50 px-4 py-2 rounded-full border border-indigo-500/30">
-                                 <Upload className="w-4 h-4" /><span className="text-sm font-semibold">Clicca per cambiare immagine</span>
-                              </div>
-                            </div>
-                          ) : (
-                            <>
-                              <Upload className="w-12 h-12 mb-4 text-slate-400" />
-                              <p className="mb-2 text-lg text-slate-300 font-medium">Clicca per caricare lo screenshot</p>
-                              <p className="text-sm text-slate-500">PNG, JPG (Max 5MB)</p>
-                            </>
-                          )}
-                      </div>
+                 <div className="w-full max-w-xl mx-auto upload-section">
+                   <label className={`flex flex-col items-center justify-center w-full rounded-2xl cursor-pointer transition-all ${imagePreview ? 'border-2 border-indigo-500 bg-indigo-900/20 p-4' : 'h-64 border-2 border-dashed border-slate-700 hover:border-indigo-400 hover:bg-slate-800'}`}>
+                      {imagePreview ? <img src={imagePreview} className="max-h-[300px] rounded-lg shadow-2xl mb-4" /> : <div className="text-slate-400 flex flex-col items-center"><Upload className="w-12 h-12 mb-4" /><p>Carica screenshot Landing Page</p></div>}
                       <input type="file" className="hidden" onChange={handleFileChange} accept="image/*" />
                    </label>
-
-                   {errorMsg && (
-                     <div className="mt-4 p-3 bg-red-900/20 border border-red-500/50 rounded-lg flex items-center gap-2 text-red-300 text-sm"><AlertCircle className="w-4 h-4" />{errorMsg}</div>
+                   {imagePreview && status !== AnalysisStatus.ANALYZING && !result && (
+                     <button onClick={handleAnalyze} className="mt-6 w-full py-4 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-semibold transition-all flex items-center justify-center gap-2"><Sparkles className="w-5 h-5" />Analizza Landing Page</button>
                    )}
-
-                   {imagePreview && status !== AnalysisStatus.ANALYZING && status !== AnalysisStatus.COMPLETE && (
-                     <button onClick={handleAnalyze} className="mt-6 w-full py-4 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-semibold shadow-lg shadow-indigo-500/20 transition-all flex items-center justify-center gap-2 text-lg">
-                       <Sparkles className="w-5 h-5" />Analizza Potenziale di Conversione
-                     </button>
-                   )}
-
-                   {status === AnalysisStatus.ANALYZING && (
-                      <div className="mt-6 w-full py-4 bg-slate-800 text-slate-300 rounded-xl flex items-center justify-center gap-3 cursor-wait"><Loader2 className="w-5 h-5 animate-spin text-indigo-400" />Analisi gerarchia visiva & bias cognitivi...</div>
-                   )}
+                   {status === AnalysisStatus.ANALYZING && <div className="mt-6 w-full py-4 bg-slate-800 text-slate-300 rounded-xl flex items-center justify-center gap-3"><Loader2 className="w-5 h-5 animate-spin text-indigo-400" />Generazione Report Avanzato...</div>}
                  </div>
               </div>
 
-              {status === AnalysisStatus.COMPLETE && result && imagePreview && (
+              {status === AnalysisStatus.COMPLETE && result && (
                 <div className="animate-fade-in-up space-y-16">
-                  <div className="border-t border-slate-800 pt-12 flex flex-col md:flex-row md:items-center justify-between gap-6">
-                     <div className="flex items-center gap-3">
-                       <h2 className="text-3xl font-bold text-white">Report di Analisi</h2>
-                       <span className="bg-indigo-500/20 text-indigo-300 px-3 py-1 rounded-full text-sm font-medium border border-indigo-500/30">Generato da IA</span>
-                     </div>
-
+                  <div className="border-t border-slate-800 pt-12 flex flex-col md:flex-row items-center justify-between gap-6">
+                     <h2 className="text-3xl font-bold text-white uppercase tracking-tighter">Analisi Strategica Completa</h2>
                      <div className="flex flex-wrap gap-3 download-buttons">
-                        <button
-                          disabled={isDownloading}
-                          onClick={() => downloadReport('pdf')}
-                          className="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-slate-200 px-4 py-2 rounded-lg border border-slate-700 transition-all text-sm font-medium disabled:opacity-50"
-                        >
-                          {isDownloading ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileDown className="w-4 h-4 text-red-400" />}
-                          PDF
-                        </button>
-                        <button
-                          disabled={isDownloading}
-                          onClick={() => downloadReport('png')}
-                          className="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-slate-200 px-4 py-2 rounded-lg border border-slate-700 transition-all text-sm font-medium disabled:opacity-50"
-                        >
-                          {isDownloading ? <Loader2 className="w-4 h-4 animate-spin" /> : <ImageIcon className="w-4 h-4 text-blue-400" />}
-                          PNG
-                        </button>
-                        <button
-                          disabled={isDownloading}
-                          onClick={() => downloadReport('jpeg')}
-                          className="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-slate-200 px-4 py-2 rounded-lg border border-slate-700 transition-all text-sm font-medium disabled:opacity-50"
-                        >
-                          {isDownloading ? <Loader2 className="w-4 h-4 animate-spin" /> : <ImageIcon className="w-4 h-4 text-emerald-400" />}
-                          JPG
-                        </button>
-                        <button
-                          disabled={isDownloading}
-                          onClick={() => downloadReport('docx')}
-                          className="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-slate-200 px-4 py-2 rounded-lg border border-slate-700 transition-all text-sm font-medium disabled:opacity-50"
-                        >
-                          {isDownloading ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileText className="w-4 h-4 text-blue-500" />}
-                          Word
-                        </button>
-                        <button
-                          disabled={isDownloading}
-                          onClick={() => window.print()}
-                          className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg shadow-lg shadow-indigo-500/20 transition-all text-sm font-semibold disabled:opacity-50"
-                        >
-                          <Download className="w-4 h-4" /> Stampa
-                        </button>
+                        {['pdf', 'png', 'jpeg', 'docx'].map(fmt => (
+                          <button key={fmt} onClick={() => downloadReport(fmt)} disabled={isDownloading} className="bg-slate-800 hover:bg-slate-700 text-slate-200 px-4 py-2 rounded-lg border border-slate-700 text-xs font-bold uppercase disabled:opacity-50">{fmt}</button>
+                        ))}
                      </div>
                   </div>
 
-                  <div ref={reportRef} className="space-y-16 p-4 md:p-8 bg-slate-900 rounded-[32px]">
-                    <div className="text-center pt-8">
-                       <h2 className="text-3xl font-black text-white uppercase tracking-tight">Analisi Avanzata Landing Page</h2>
-                       <div className="w-24 h-1 bg-indigo-500 mx-auto mt-4"></div>
+                  <div ref={reportRef} className="space-y-24 p-8 bg-slate-900 rounded-[48px] border border-white/5">
+                    <div className="text-center">
+                       <h2 className="text-4xl font-black text-white uppercase tracking-tighter">Audit Avanzato CRO & Persuasione</h2>
+                       <div className="w-32 h-2 bg-indigo-500 mx-auto mt-6 rounded-full"></div>
                     </div>
 
-                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
                       <div className="lg:col-span-7 space-y-6">
-                         <div className="flex justify-between items-center border-b border-white/10 pb-4">
-                           <h3 className="text-2xl font-bold text-slate-200 flex items-center gap-3"><ScanEye className="w-6 h-6 text-indigo-400" /> Mappa Attentiva Predittiva (Eyetracking)</h3>
-                         </div>
+                         <h3 className="text-2xl font-bold text-slate-200 flex items-center gap-3 uppercase tracking-tighter"><ScanEye className="text-indigo-400" /> Mappa Attentiva Predittiva</h3>
                          <HeatmapOverlay imageSrc={imagePreview} points={result.heatmap} />
-                         <p className="text-base text-slate-400 leading-relaxed">Questa mappa di calore predittiva mostra dove è probabile che si concentri l'attenzione dell'utente.</p>
                       </div>
-
-                      <div className="lg:col-span-5 grid grid-cols-2 gap-4 h-fit">
-                       <div className="col-span-2"><ScoreCard title="Conversion Score Globale" score={result.report.summary.overall} color="text-indigo-400" description="Valutazione complessiva del potenziale di vendita." /></div>
-                       <ScoreCard title="Promessa" score={result.report.summary.scores["Promessa"]} />
-                       <ScoreCard title="Benefici" score={result.report.summary.scores["Benefici"]} />
-                       <ScoreCard title="Persuasione" score={result.report.summary.scores["Persuasione"]} />
-                       <ScoreCard title="Leggibilità" score={result.report.summary.scores["Leggibilità"]} />
-                       <div className="col-span-2 glass-panel p-6 rounded-xl mt-4 border border-slate-700 text-center">
-                         <h4 className="text-slate-400 text-sm uppercase tracking-wide font-bold mb-3">Giudizio Sintetico</h4>
-                         <p className="text-slate-200 text-base leading-relaxed italic">"{result.report.summary.judgment}"</p>
-                       </div>
-                    </div>
+                      <div className="lg:col-span-5 grid grid-cols-2 gap-4">
+                        <div className="col-span-2"><ScoreCard title="Conversion Score Globale" score={result.report.summary.overall} /></div>
+                        {["Promessa", "Benefici", "Persuasione", "Fiducia"].map(s => <ScoreCard key={s} title={s} score={result.report.summary.scores[s]} />)}
+                      </div>
                     </div>
                     <ReportSection data={result} />
                   </div>
