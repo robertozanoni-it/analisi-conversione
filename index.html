@@ -229,6 +229,62 @@
               },
               judgment: "La pagina informa ma non rassicura. Il percorso verso la conversione è interrotto da mancanze di dati concreti e microcopy poco curato vicino ai punti decisionali.",
               overall: 47
+            },
+            strategic: {
+              positioning: {
+                score: 55,
+                description: "Il posizionamento attuale è troppo generico ('software per aziende'). Manca una specializzazione chiara che risuoni con un segmento specifico.",
+                improvedFormula: "L'unica piattaforma AI che riduce il churn del 20% per SaaS B2B automatizzando il customer success."
+              },
+              resultMechanism: {
+                score: 40,
+                steps: [
+                  { step: "Integrazione Dati", benefit: "Zero inserimento manuale, tutto si sincronizza in 5 minuti." },
+                  { step: "Analisi Predittiva", benefit: "Identifica i clienti a rischio prima che decidano di disdire." },
+                  { step: "Azione Automatica", benefit: "Invia l'offerta giusta al momento giusto senza intervento umano." }
+                ]
+              },
+              transformation: {
+                score: 50,
+                before: "Stress costante, perdita di fatturato imprevedibile, team sommerso da ticket di cancellazione.",
+                after: "Crescita lineare, controllo totale sui ricavi ricorrenti, team focalizzato su espansione e non su emergenze."
+              },
+              objections: [
+                { objection: "È troppo difficile da configurare", counter: "Setup assistito in 24 ore e integrazioni native 1-click." },
+                { objection: "Costa troppo per il mio volume", counter: "Piano 'Pay as you Grow' che si ripaga da solo col primo cliente salvato." },
+                { objection: "Abbiamo già un tool simile", counter: "La nostra IA è l'unica focalizzata sul Churn, non è un CRM generico." }
+              ],
+              differentiation: {
+                score: 35,
+                uniqueElements: ["Algoritmo proprietario Churn-Predict", "Setup assistito incluso", "Garanzia 'Soddisfatti o Salvati'"]
+              },
+              motivation: {
+                score: 60,
+                suggestions: [
+                  "Usa verbi di potere legati al possesso e al controllo.",
+                  "Enfatizza il 'tempo recuperato' come valuta principale.",
+                  "Collega ogni funzionalità a un'emozione di sollievo o orgoglio professionale."
+                ]
+              },
+              narrativeCoherence: {
+                score: 45,
+                issues: "La storia si interrompe tra la promessa e la prova tecnica.",
+                recommendedStoryline: [
+                  "Lo scenario del fallimento (perché i metodi vecchi non funzionano più)",
+                  "La scoperta della nuova via (il nostro approccio)",
+                  "La prova del successo (il cliente che ce l'ha fatta)",
+                  "L'invito alla trasformazione"
+                ]
+              },
+              leversMap: {
+                ranking: ["Autorità", "Riprova Sociale", "Simpatia", "Scarsità"],
+                toStrengthen: ["Coerenza", "Reciprocità"]
+              },
+              rewritingRules: [
+                "Elimina gli aggettivi deboli (es. 'ottimo', 'veloce') e usa numeri.",
+                "Parla al 'Tu' e non al 'Noi'.",
+                "Metti il beneficio prima della caratteristica."
+              ]
             }
           }
         };
@@ -453,6 +509,101 @@
                         </div>
                       </div>
                     ))}
+                  </div>
+               </div>
+            </section>
+
+            {/* 7. ANALISI STRATEGICA PROFONDA */}
+            <section className="space-y-16">
+               <div className="flex items-center gap-4 border-b border-slate-800 pb-6">
+                 <Brain className="text-pink-400 w-8 h-8" />
+                 <h2 className="text-3xl font-black text-white uppercase tracking-tight">Analisi Strategica Profonda</h2>
+               </div>
+
+               {/* Posizionamento & Differenziazione */}
+               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                  <div className="glass-panel p-8 rounded-3xl border-l-4 border-pink-500">
+                    <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2"><Target className="text-pink-400" /> Posizionamento</h3>
+                    <p className="text-slate-300 mb-6">{report.strategic.positioning.description}</p>
+                    <div className="bg-pink-500/10 p-6 rounded-2xl border border-pink-500/20">
+                      <h4 className="text-[10px] font-bold text-pink-400 uppercase mb-2 tracking-widest font-black">Formula di Posizionamento Suggerita:</h4>
+                      <p className="text-white text-lg font-bold italic leading-tight">"{report.strategic.positioning.improvedFormula}"</p>
+                    </div>
+                  </div>
+                  <div className="glass-panel p-8 rounded-3xl border-l-4 border-indigo-500">
+                    <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2"><ShieldCheck className="text-indigo-400" /> Elementi Differenzianti</h3>
+                    <div className="space-y-3">
+                      {report.strategic.differentiation.uniqueElements.map((el, i) => (
+                        <div key={i} className="flex items-center gap-3 bg-slate-800/50 p-3 rounded-xl border border-slate-700">
+                          <Zap size={16} className="text-yellow-400" />
+                          <span className="text-slate-200 font-medium">{el}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+               </div>
+
+               {/* Meccanismo & Trasformazione */}
+               <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                  <div className="lg:col-span-7 glass-panel p-8 rounded-3xl">
+                    <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-2"><Activity className="text-emerald-400" /> Meccanismo del Risultato</h3>
+                    <div className="relative space-y-8 before:absolute before:left-[19px] before:top-2 before:bottom-2 before:w-0.5 before:bg-slate-700">
+                      {report.strategic.resultMechanism.steps.map((step, i) => (
+                        <div key={i} className="relative flex gap-6 items-start">
+                          <div className="w-10 h-10 rounded-full bg-slate-800 border-4 border-slate-900 flex items-center justify-center text-emerald-400 font-black z-10">{i+1}</div>
+                          <div>
+                            <h4 className="text-white font-bold">{step.step}</h4>
+                            <p className="text-slate-400 text-sm">{step.benefit}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="lg:col-span-5 glass-panel p-8 rounded-3xl bg-gradient-to-br from-indigo-900/20 to-transparent">
+                    <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-2"><ArrowRightCircle className="text-indigo-400" /> Narrativa di Trasformazione</h3>
+                    <div className="space-y-6">
+                      <div className="p-4 rounded-2xl bg-red-500/5 border border-red-500/10">
+                        <div className="text-[10px] font-bold text-red-400 uppercase mb-1">Stato Attuale (Dolore)</div>
+                        <p className="text-slate-300 text-sm italic">{report.strategic.transformation.before}</p>
+                      </div>
+                      <div className="flex justify-center"><ArrowRight className="text-slate-700 rotate-90 lg:rotate-0" /></div>
+                      <div className="p-4 rounded-2xl bg-emerald-500/5 border border-emerald-500/10">
+                        <div className="text-[10px] font-bold text-emerald-400 uppercase mb-1">Stato Futuro (Piacere)</div>
+                        <p className="text-white text-sm font-bold italic">{report.strategic.transformation.after}</p>
+                      </div>
+                    </div>
+                  </div>
+               </div>
+
+               {/* Obiezioni & Copywriting */}
+               <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                  <div className="lg:col-span-2 glass-panel p-8 rounded-3xl">
+                    <h3 className="text-xl font-bold text-white mb-6">Gestione Obiezioni & Credibilità</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {report.strategic.objections.map((obj, i) => (
+                        <div key={i} className="p-5 rounded-2xl bg-slate-900/50 border border-slate-700 hover:border-indigo-500/30 transition-colors">
+                           <div className="flex items-start gap-2 mb-2 text-slate-400">
+                             <MessageSquareQuote size={16} className="shrink-0 mt-1" />
+                             <span className="text-xs font-bold italic">"{obj.objection}"</span>
+                           </div>
+                           <div className="flex items-start gap-2 text-white">
+                             <CheckCircle2 size={16} className="text-emerald-500 shrink-0 mt-1" />
+                             <span className="text-sm font-medium">{obj.counter}</span>
+                           </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="glass-panel p-8 rounded-3xl">
+                    <h3 className="text-xl font-bold text-white mb-6">Copywriting Rules</h3>
+                    <ul className="space-y-4">
+                      {report.strategic.rewritingRules.map((rule, i) => (
+                        <li key={i} className="flex gap-3 text-slate-300 text-sm">
+                          <div className="w-1.5 h-1.5 rounded-full bg-pink-500 mt-2 shrink-0" />
+                          {rule}
+                        </li>
+                      ))}
+                    </ul>
                   </div>
                </div>
             </section>
