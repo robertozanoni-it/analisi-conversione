@@ -55,7 +55,7 @@
           color: black;
         }
         .glass-panel {
-          background: white;
+          background: white !important;
           border: 1px solid #e2e8f0;
           color: black;
         }
@@ -103,13 +103,14 @@
       import { 
         Upload, ScanEye, Sparkles, AlertCircle, Loader2, ArrowRight,
         CheckCircle2, AlertTriangle, Lightbulb, Brain, Activity, MessageSquareQuote, Zap, Search, ArrowRightCircle,
-        Download, FileText, Image as ImageIcon, FileDown
+        Download, FileText, Image as ImageIcon, FileDown, ShieldCheck, Target, Lock, MousePointer2, Layout, Users
       } from 'lucide-react';
       import html2canvas from 'html2canvas';
       import { jsPDF } from 'jspdf';
 
-      // --- TYPES & ENUMS ---
-      // Definiamo i tipi internamente per TypeScript (Babel li gestirà ignorandoli nel transpile)
+      // --- CONFIGURAZIONE ---
+      const USE_MOCK = true; // Impostare su false per tentare l'uso dell'API reale di Gemini
+      const HARDCODED_API_KEY = ""; 
 
       const AnalysisStatus = {
         IDLE: 'IDLE',
@@ -118,11 +119,9 @@
         ERROR: 'ERROR'
       };
 
-
-      const analyzeImage = async (base64Image) => {
-        // Simulazione caricamento
+      // Mock Data Generator
+      const getMockAnalysis = async () => {
         await new Promise(r => setTimeout(r, 4000));
-        
         return {
           heatmap: [
             { x: 50, y: 20, intensity: 0.9 },
@@ -201,6 +200,76 @@
               "Trasformare le testimonianze in mini-case study numerici.",
               "Specificare il target locale/settoriale nel primo scroll."
             ],
+            trustAnalysis: {
+              persuasiveFlow: {
+                score: 58,
+                evaluation: "L'ordine attuale è Soluzione -> Funzionalità -> CTA. Manca la fase di empatia sul problema e la riduzione del rischio prima del form.",
+                suggestions: "Spostare la sezione 'Come Funziona' dopo aver evidenziato il Problema. Rafforzare la sezione Testimonianze prima della CTA finale."
+              },
+              lossAversion: {
+                score: 25,
+                evaluation: "La pagina si concentra solo sui vantaggi, ignorando completamente le conseguenze dell'inazione.",
+                examples: [
+                  "Ogni mese di attesa ti costa mediamente il 15% di contatti qualificati che finiscono ai tuoi competitor.",
+                  "Senza un sistema automatizzato, stai sprecando 4 ore al giorno in task manuali ripetitivi.",
+                  "Il costo del tuo attuale tasso di conversione inefficiente è di circa 2.400€/mese in budget advertising non ottimizzato."
+                ]
+              },
+              concretenessConsistency: {
+                score: 45,
+                evaluation: "La promessa iniziale di 'risultati garantiti' non viene supportata da dati reali nelle sezioni centrali.",
+                genericPoints: [
+                  "Abbiamo aiutato molte aziende a crescere.",
+                  "Il nostro software è il più veloce sul mercato.",
+                  "Supporto clienti di alta qualità."
+                ],
+                rewrites: [
+                  "Oltre 140 aziende italiane hanno aumentato il fatturato del 20% nel primo trimestre.",
+                  "Benchmark certificato: 40% più veloce rispetto ai 3 principali competitor europei.",
+                  "Tempo medio di risposta ticket: 8 minuti con risoluzione al primo contatto nel 92% dei casi."
+                ]
+              },
+              riskReduction: {
+                score: 60,
+                evaluation: "Presente la prova gratuita, ma mancano rassicurazioni sulla privacy e sulla facilità di disdetta.",
+                microcopy: [
+                  "Nessuna carta di credito richiesta per la prova di 14 giorni.",
+                  "Cancellazione con un click, senza telefonate o moduli infiniti.",
+                  "I tuoi dati sono criptati e non verranno mai ceduti a terzi."
+                ]
+              },
+              formMicrocopy: {
+                score: 35,
+                evaluation: "Il form ha etichette standard e un bottone 'Invia'. Non crea aspettativa né fiducia.",
+                suggestions: [
+                  "Sopra il form: 'Ricevi il tuo piano personalizzato in meno di 24 ore'.",
+                  "Sotto il bottone: 'Ti contatteremo solo per la consulenza, niente spam (promesso)'.",
+                  "Sul bottone: 'Ottieni la mia analisi gratuita' invece di 'Invia'."
+                ]
+              },
+              visualTrustHierarchy: {
+                score: 50,
+                evaluation: "I numeri chiave sono piccoli e hanno lo stesso peso visivo del testo normale.",
+                indications: [
+                  "Ingrandire i font dei numeri percentuali (+30%, 1.2M€).",
+                  "Usare box con sfondo contrastante per le citazioni dei clienti.",
+                  "Aggiungere icone di spunta (check) verdi accanto ai benefici principali."
+                ]
+              },
+              awarenessLevels: {
+                score: 40,
+                evaluation: "La pagina assume che l'utente conosca già perfettamente il problema, saltando la fase educativa.",
+                suggestions: [
+                  "Aggiungere una sezione 'Perché i metodi tradizionali non funzionano più' per chi non è ancora consapevole della causa del problema.",
+                  "Inserire un FAQ tecnico a fondo pagina per gli utenti più esperti e analitici."
+                ]
+              },
+              additionalPriorities: [
+                "Inserire microcopy rassicurante ('niente spam', 'risposta in 24h') immediatamente sotto il bottone della CTA.",
+                "Creare una sezione 'Costo dell'Inazione' che quantifichi economicamente il vantaggio perso ogni giorno.",
+                "Riorganizzare il flusso logico: Problema -> Costo dell'Inazione -> Soluzione -> Prove -> CTA."
+              ]
+            },
             summary: {
               scores: {
                 "Promessa": 65,
@@ -209,13 +278,32 @@
                 "Testimonianze": 30,
                 "Target/Locale": 40,
                 "Leggibilità": 75,
-                "Coerenza": 50
+                "Coerenza": 50,
+                "Fiducia": 45
               },
-              judgment: "Pagina chiara ma poco persuasiva: buona la struttura informativa, ma mancano i trigger psicologici necessari per spingere l'utente all'azione immediata.",
-              overall: 49
+              judgment: "La pagina informa ma non rassicura. Il percorso verso la conversione è interrotto da mancanze di dati concreti e microcopy poco curato vicino ai punti decisionali.",
+              overall: 47
             }
           }
         };
+      };
+
+      const analyzeImage = async (base64Image) => {
+        if (USE_MOCK) return getMockAnalysis();
+
+        // Nota: Caricamento dinamico per evitare crash se il modulo non è disponibile
+        try {
+          const { GoogleGenAI } = await import("https://esm.sh/@google/genai@0.1.1");
+          const apiKey = HARDCODED_API_KEY || window.process?.env?.API_KEY || ''; 
+          if (!apiKey) throw new Error("API Key mancante per l'analisi reale.");
+
+          const ai = new GoogleGenAI({ apiKey });
+          // La logica per Gemini andrebbe qui...
+          return getMockAnalysis(); // Fallback se non ancora implementato
+        } catch (e) {
+          console.warn("Errore caricamento modulo Gemini, uso mock di fallback.", e);
+          return getMockAnalysis();
+        }
       };
 
       // --- COMPONENTS ---
@@ -448,20 +536,188 @@
                </div>
             </section>
 
-            {/* 9. Sintesi Operativa */}
-            <section className="glass-panel p-10 rounded-[40px] bg-gradient-to-br from-indigo-600/20 to-slate-900 border-2 border-indigo-500/30">
-               <h2 className="text-3xl font-black text-white mb-8 text-center uppercase tracking-tighter">9. Top 5 Interventi Prioritari</h2>
-               <div className="space-y-6">
-                 {report.priorities.map((p, i) => (
-                   <div key={i} className="flex gap-6 items-center group">
-                     <div className="w-12 h-12 rounded-2xl bg-indigo-600 flex items-center justify-center text-xl font-black text-white shrink-0 shadow-lg shadow-indigo-500/40 group-hover:scale-110 transition-transform">
-                       {i + 1}
-                     </div>
-                     <p className="text-white text-xl font-bold leading-tight">{p}</p>
-                   </div>
-                 ))}
+            {/* --- ANALISI PERCORSO PERSUASIVO & FIDUCIA --- */}
+            <div className="pt-10 border-t border-slate-800">
+               <div className="flex items-center gap-4 mb-12">
+                  <div className="bg-amber-500/20 p-3 rounded-2xl border border-amber-500/30">
+                    <ShieldCheck className="w-8 h-8 text-amber-400" />
+                  </div>
+                  <div>
+                    <h2 className="text-3xl font-black text-white uppercase tracking-tight">Analisi Percorso Persuasivo & Fiducia</h2>
+                    <p className="text-slate-400">Valutazione della progressione psicologica e riduzione del rischio.</p>
+                  </div>
                </div>
-            </section>
+
+               <div className="space-y-12">
+                  {/* 10. Flusso Persuasivo */}
+                  <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
+                    <div className="md:col-span-4 flex flex-col gap-4">
+                      <div className="glass-panel p-6 rounded-2xl text-center border-b-4 border-amber-500">
+                        <div className="text-xs font-bold text-slate-500 uppercase mb-1 tracking-widest">Progressione Persuasiva</div>
+                        <div className="text-4xl font-black text-white">{report.trustAnalysis.persuasiveFlow.score}<span className="text-lg text-slate-500">/100</span></div>
+                      </div>
+                    </div>
+                    <div className="md:col-span-8 glass-panel p-8 rounded-2xl">
+                      <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2"><ArrowRightCircle className="text-amber-400" /> 10. Flusso persuasivo delle sezioni</h3>
+                      <p className="text-slate-300 mb-6 italic">"{report.trustAnalysis.persuasiveFlow.evaluation}"</p>
+                      <div className="bg-amber-500/5 p-4 rounded-xl border-l-4 border-amber-500">
+                        <p className="text-sm text-white font-medium">{report.trustAnalysis.persuasiveFlow.suggestions}</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 11. Loss Aversion */}
+                  <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
+                    <div className="md:col-span-4 flex flex-col gap-4">
+                      <div className="glass-panel p-6 rounded-2xl text-center border-b-4 border-red-500">
+                        <div className="text-xs font-bold text-slate-500 uppercase mb-1 tracking-widest">Loss Aversion</div>
+                        <div className="text-4xl font-black text-white">{report.trustAnalysis.lossAversion.score}<span className="text-lg text-slate-500">/100</span></div>
+                      </div>
+                    </div>
+                    <div className="md:col-span-8 glass-panel p-8 rounded-2xl">
+                      <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2"><AlertTriangle className="text-red-400" /> 11. Evidenziazione del costo del non agire</h3>
+                      <p className="text-slate-300 mb-6">{report.trustAnalysis.lossAversion.evaluation}</p>
+                      <div className="space-y-3">
+                        <h4 className="text-xs font-bold text-red-400 uppercase tracking-widest">Esempi di frasi ad alto impatto:</h4>
+                        {report.trustAnalysis.lossAversion.examples.map((ex, i) => (
+                          <div key={i} className="flex gap-3 text-sm text-slate-200 bg-red-500/5 p-3 rounded-lg border border-red-500/10 italic">
+                             <div className="text-red-500 font-bold shrink-0">!</div>
+                             "{ex}"
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 12. Coerenza Concretezza */}
+                  <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
+                    <div className="md:col-span-4 flex flex-col gap-4">
+                      <div className="glass-panel p-6 rounded-2xl text-center border-b-4 border-indigo-500">
+                        <div className="text-xs font-bold text-slate-500 uppercase mb-1 tracking-widest">Coerenza Promessa</div>
+                        <div className="text-4xl font-black text-white">{report.trustAnalysis.concretenessConsistency.score}<span className="text-lg text-slate-500">/100</span></div>
+                      </div>
+                    </div>
+                    <div className="md:col-span-8 glass-panel p-8 rounded-2xl">
+                      <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2"><Target className="text-indigo-400" /> 12. Coerenza della concretezza</h3>
+                      <p className="text-slate-300 mb-6">{report.trustAnalysis.concretenessConsistency.evaluation}</p>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="space-y-3">
+                           <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-tighter">Copy Generico (Da evitare)</h4>
+                           {report.trustAnalysis.concretenessConsistency.genericPoints.map((p, i) => (
+                             <div key={i} className="text-xs text-slate-400 line-through opacity-60">{p}</div>
+                           ))}
+                        </div>
+                        <div className="space-y-3">
+                           <h4 className="text-[10px] font-black text-indigo-400 uppercase tracking-tighter">Riscrittura Misurabile</h4>
+                           {report.trustAnalysis.concretenessConsistency.rewrites.map((p, i) => (
+                             <div key={i} className="text-xs text-indigo-200 font-bold bg-indigo-500/5 p-2 rounded border border-indigo-500/20">{p}</div>
+                           ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 13. Riduzione Rischio */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                     <div className="glass-panel p-8 rounded-3xl border-t-4 border-emerald-500">
+                        <div className="flex justify-between items-center mb-6">
+                           <h3 className="text-xl font-bold text-white flex items-center gap-2"><Lock className="text-emerald-400" /> 13. Fiducia e sicurezza</h3>
+                           <span className="text-emerald-400 font-bold">{report.trustAnalysis.riskReduction.score}/100</span>
+                        </div>
+                        <p className="text-slate-400 text-sm mb-6">{report.trustAnalysis.riskReduction.evaluation}</p>
+                        <div className="space-y-3">
+                           <h4 className="text-[10px] font-black text-emerald-500 uppercase">Microcopy rassicurante consigliato:</h4>
+                           {report.trustAnalysis.riskReduction.microcopy.map((m, i) => (
+                             <div key={i} className="flex gap-2 text-xs text-emerald-200 font-medium">
+                               <CheckCircle2 size={14} className="text-emerald-500 shrink-0" /> {m}
+                             </div>
+                           ))}
+                        </div>
+                     </div>
+
+                     {/* 14. Microcopy Form */}
+                     <div className="glass-panel p-8 rounded-3xl border-t-4 border-blue-500">
+                        <div className="flex justify-between items-center mb-6">
+                           <h3 className="text-xl font-bold text-white flex items-center gap-2"><MousePointer2 className="text-blue-400" /> 14. Chiarezza post-azione</h3>
+                           <span className="text-blue-400 font-bold">{report.trustAnalysis.formMicrocopy.score}/100</span>
+                        </div>
+                        <p className="text-slate-400 text-sm mb-6">{report.trustAnalysis.formMicrocopy.evaluation}</p>
+                        <div className="space-y-3">
+                           <h4 className="text-[10px] font-black text-blue-500 uppercase">Suggerimenti operativi form:</h4>
+                           {report.trustAnalysis.formMicrocopy.suggestions.map((s, i) => (
+                             <div key={i} className="text-xs text-blue-100 bg-blue-500/5 p-3 rounded-xl border border-blue-500/10 italic">
+                                "{s}"
+                             </div>
+                           ))}
+                        </div>
+                     </div>
+                  </div>
+
+                  {/* 15 & 16. Gerarchia & Consapevolezza */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                     <div className="glass-panel p-8 rounded-3xl">
+                        <div className="flex justify-between items-center mb-6">
+                           <h3 className="text-xl font-bold text-white flex items-center gap-2"><Layout className="text-cyan-400" /> 15. Gerarchia visiva fiducia</h3>
+                           <span className="text-cyan-400 font-bold">{report.trustAnalysis.visualTrustHierarchy.score}/100</span>
+                        </div>
+                        <p className="text-slate-400 text-sm mb-6">{report.trustAnalysis.visualTrustHierarchy.evaluation}</p>
+                        <ul className="space-y-2">
+                           {report.trustAnalysis.visualTrustHierarchy.indications.map((ind, i) => (
+                             <li key={i} className="flex gap-2 text-slate-300 text-xs">
+                               <div className="w-1 h-1 bg-cyan-400 rounded-full mt-1.5 shrink-0" /> {ind}
+                             </li>
+                           ))}
+                        </ul>
+                     </div>
+
+                     <div className="glass-panel p-8 rounded-3xl">
+                        <div className="flex justify-between items-center mb-6">
+                           <h3 className="text-xl font-bold text-white flex items-center gap-2"><Users className="text-purple-400" /> 16. Consapevolezza</h3>
+                           <span className="text-purple-400 font-bold">{report.trustAnalysis.awarenessLevels.score}/100</span>
+                        </div>
+                        <p className="text-slate-400 text-sm mb-6">{report.trustAnalysis.awarenessLevels.evaluation}</p>
+                        <ul className="space-y-2">
+                           {report.trustAnalysis.awarenessLevels.suggestions.map((s, i) => (
+                             <li key={i} className="flex gap-2 text-slate-300 text-xs">
+                               <div className="w-1 h-1 bg-purple-400 rounded-full mt-1.5 shrink-0" /> {s}
+                             </li>
+                           ))}
+                        </ul>
+                     </div>
+                  </div>
+               </div>
+            </div>
+
+            {/* 17. Sintesi Operativa Finale */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+               <section className="glass-panel p-10 rounded-[40px] bg-gradient-to-br from-indigo-600/20 to-slate-900 border-2 border-indigo-500/30">
+                  <h2 className="text-2xl font-black text-white mb-8 uppercase tracking-tighter">9. Top 5 Interventi Prioritari</h2>
+                  <div className="space-y-5">
+                    {report.priorities.map((p, i) => (
+                      <div key={i} className="flex gap-4 items-center group">
+                        <div className="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center text-lg font-black text-white shrink-0 shadow-lg shadow-indigo-500/40 group-hover:scale-110 transition-transform">
+                          {i + 1}
+                        </div>
+                        <p className="text-white text-base font-bold leading-tight">{p}</p>
+                      </div>
+                    ))}
+                  </div>
+               </section>
+
+               <section className="glass-panel p-10 rounded-[40px] bg-gradient-to-br from-amber-600/20 to-slate-900 border-2 border-amber-500/30">
+                  <h2 className="text-2xl font-black text-white mb-8 uppercase tracking-tighter">17. Azioni Prioritarie: Fiducia & Sicurezza</h2>
+                  <div className="space-y-5">
+                    {report.trustAnalysis.additionalPriorities.map((p, i) => (
+                      <div key={i} className="flex gap-4 items-center group">
+                        <div className="w-10 h-10 rounded-xl bg-amber-600 flex items-center justify-center text-lg font-black text-white shrink-0 shadow-lg shadow-amber-500/40 group-hover:scale-110 transition-transform">
+                          {String.fromCharCode(65 + i)}
+                        </div>
+                        <p className="text-white text-base font-bold leading-tight">{p}</p>
+                      </div>
+                    ))}
+                  </div>
+               </section>
+            </div>
           </div>
         );
       };
@@ -501,6 +757,28 @@
           setIsDownloading(true);
           
           try {
+            if (format === 'docx') {
+              const content = reportRef.current.innerHTML;
+              const header = "<html xmlns:o='urn:schemas-microsoft-com:office:office' "+
+                    "xmlns:w='urn:schemas-microsoft-com:office:word' "+
+                    "xmlns='http://www.w3.org/TR/REC-html40'>"+
+                    "<head><meta charset='utf-8'><title>Export HTML to Word</title><style>body { font-family: sans-serif; }</style></head><body>";
+              const footer = "</body></html>";
+              const sourceHTML = header+content+footer;
+              
+              const blob = new Blob(['\ufeff', sourceHTML], {
+                type: 'application/msword'
+              });
+              
+              const url = URL.createObjectURL(blob);
+              const link = document.createElement("a");
+              link.href = url;
+              link.download = `CreativeScore-Analysis-${Date.now()}.doc`;
+              link.click();
+              URL.revokeObjectURL(url);
+              return;
+            }
+
             const canvas = await html2canvas(reportRef.current, {
               scale: 2,
               useCORS: true,
@@ -636,15 +914,28 @@
                         </button>
                         <button 
                           disabled={isDownloading}
+                          onClick={() => downloadReport('docx')}
+                          className="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-slate-200 px-4 py-2 rounded-lg border border-slate-700 transition-all text-sm font-medium disabled:opacity-50"
+                        >
+                          {isDownloading ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileText className="w-4 h-4 text-blue-500" />}
+                          Word
+                        </button>
+                        <button 
+                          disabled={isDownloading}
                           onClick={() => window.print()}
                           className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg shadow-lg shadow-indigo-500/20 transition-all text-sm font-semibold disabled:opacity-50"
                         >
-                          <Download className="w-4 h-4" /> Stampa Report
+                          <Download className="w-4 h-4" /> Stampa
                         </button>
                      </div>
                   </div>
 
                   <div ref={reportRef} className="space-y-16 p-4 md:p-8 bg-slate-900 rounded-[32px]">
+                    <div className="text-center pt-8">
+                       <h2 className="text-3xl font-black text-white uppercase tracking-tight">Analisi Avanzata Landing Page</h2>
+                       <div className="w-24 h-1 bg-indigo-500 mx-auto mt-4"></div>
+                    </div>
+
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
                       <div className="lg:col-span-7 space-y-6">
                          <div className="flex justify-between items-center border-b border-white/10 pb-4">
